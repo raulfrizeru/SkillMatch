@@ -9,3 +9,9 @@ def clean_text_for_llm(text):
     text = re.sub(r'\s{2,}', ' ', text)
     text = text.strip()
     return text
+
+def clean_text_for_semantic_analysis(text):
+    text = text.lower()
+    text = re.sub(r"[.,:;!?]\s+", " ", text)
+    text = re.sub(r'[?!^%$*()|-]', '', text)
+    return text
