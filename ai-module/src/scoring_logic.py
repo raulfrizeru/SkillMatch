@@ -71,5 +71,35 @@ def calculate_skill_score(cv_json: dict, job_json: dict, threshold: float = 0.3,
     final_score = total_points / total_required
     return float(max(0.0, min(1.0, final_score)))
 
-px=calculate_skill_score(CV_JSON, JOB_JSON)
-print(px)
+def get_weighted_domain_vector(data_json: dict):
+    if 'experience' not in data_json or not data_json['experience']:
+        return None
+
+    total_years = 0.0
+    weighted_sum_vector = np.zeros(model.get_sentence_embedding_dimension())
+
+    for item in data_json['experience']:
+        domain = item.get('domain', '').strip()
+        years = float(item.get('years', 0.0))
+
+        if domain and years > 0:
+            domain_vector = model.encode(domain)
+            weighted_sum_vector += domain_vector * years
+            total_years += years
+
+    if total_years == 0:
+        return None
+
+    average_vector = weighted_sum_vector / total_years
+    return average_vector
+
+def calculate_domain_score(cv_json: dict, job_json: dict) -> float:
+    cv_profile_vec = get_weighted_domain_vector(cv_json)
+    job_profile_vec = get_weighted_domain_vector(job_json)
+
+    if cv_profile_vec is None or job_profile_vec is None:
+        return 0.0
+
+    similarity = util.cos_sim([cv_profile_vec], [job_profile_vec]).item()
+    return float(max(0.0, min(1.0, similarity)))
+
