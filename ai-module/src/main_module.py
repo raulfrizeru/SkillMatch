@@ -1,5 +1,4 @@
 import data_extraction
-import data_cleaner
 import llm_handler
 import scoring_logic
 
@@ -100,8 +99,8 @@ And that's it!"""
 Cv_raw=data_extraction.extract_text_from_pdf(CvSource)
 
 #2. Clean CV and Job_description for LLM
-Cv_cleaned_for_llm=data_cleaner.clean_text_for_llm(Cv_raw)
-Job_cleaned_for_llm=data_cleaner.clean_text_for_llm(Job_raw)
+Cv_cleaned_for_llm=data_extraction.clean_text_for_llm(Cv_raw)
+Job_cleaned_for_llm=data_extraction.clean_text_for_llm(Job_raw)
 
 #3. Extract structured data from CV and Job_description
 CV_JSON=llm_handler.extract_structured_data(Cv_cleaned_for_llm, is_job=False)
