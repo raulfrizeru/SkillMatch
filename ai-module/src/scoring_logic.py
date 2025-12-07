@@ -225,19 +225,19 @@ def calculate_interview_score(interviews_list: list, job_json: dict, target_comp
                 best_weighted_score = final_score_for_this_interview
     return float(best_weighted_score)
 
-def calculate_final_score(semantic_score: float, skills_score: float, experience_score: float, domain_score: float, soft_skills_score: float, interview_score: float) -> dict:
+def calculate_final_score(semantic_score: float, skills_score: float,  domain_score: float, experience_score: float, soft_skills_score: float, interview_score: float) -> dict:
     W_SKILLS = 0.35
     W_SEMANTIC = 0.25
-    W_EXPERIENCE = 0.20
     W_DOMAIN = 0.10
+    W_EXPERIENCE = 0.20
     W_SOFT = 0.05
     W_INTERVIEW = 0.05
 
     final_score = (
             (skills_score * W_SKILLS) +
             (semantic_score * W_SEMANTIC) +
-            (experience_score * W_EXPERIENCE) +
             (domain_score * W_DOMAIN) +
+            (experience_score * W_EXPERIENCE) +
             (soft_skills_score * W_SOFT) +
             (interview_score * W_INTERVIEW)
     )
