@@ -155,4 +155,36 @@ def calculate_experience_score(cv_json: dict, job_json: dict, threshold: float =
         return 0.0
     return float(total_weighted_score / total_weight)
 
+def calculate_soft_skills_score(cv_json: dict, job_json: dict, threshold_high: float = 0.80, threshold_mid: float = 0.4) -> float:
+    cv_soft = [s.lower().strip() for s in cv_json.get('soft_skills', []) if s]
+    job_soft = [s.lower().strip() for s in job_json.get('soft_skills', []) if s]
+
+    if not job_soft:
+        return 1.0
+    if not cv_soft:
+        return 0.0
+
+    cv_emb = model.encode(cv_soft, convert_to_tensor=True)
+    job_emb = model.encode(job_soft, convert_to_tensor=True)
+
+    total_candidate_points = 0.0
+
+    cosine_scores = util.cos_sim(cv_emb, job_emb)
+
+    for i in range(len(cv_soft)):
+        best_match_with_job = float(np.max(cosine_scores[i].cpu().numpy()))
+        points = 0.0
+
+        if best_match_with_job >= threshold_high:
+            points = best_match_with_job * 10.0
+        elif best_match_with_job >= threshold_mid:
+            points = best_match_with_job * 7.0
+        else:
+            points = 1.0
+
+        total_candidate_points += points
+
+    max_potential_score = len(job_soft) * 10.0
+    final_score = total_candidate_points / max_potential_score
+    return float(max(0.0, min(1.0, final_score)))
 
