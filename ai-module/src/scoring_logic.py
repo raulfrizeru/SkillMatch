@@ -103,3 +103,56 @@ def calculate_domain_score(cv_json: dict, job_json: dict) -> float:
     similarity = util.cos_sim([cv_profile_vec], [job_profile_vec]).item()
     return float(max(0.0, min(1.0, similarity)))
 
+def get_max_years_per_domain(data_json):
+    domain_map = {}
+    for item in data_json.get('experience', []):
+        dom = item.get('domain', '').strip()
+        yrs = float(item.get('years', 0))
+        if not dom:
+            continue
+        if dom not in domain_map or yrs > domain_map[dom]:
+            domain_map[dom] = yrs
+    return domain_map
+
+def calculate_experience_score(cv_json: dict, job_json: dict, threshold: float = 0.7) -> float:
+    job_domains_map = get_max_years_per_domain(job_json)
+    cv_domains_map = get_max_years_per_domain(cv_json)
+
+    if not job_domains_map:
+        return 1.0
+
+    total_weighted_score = 0.0
+    total_weight = 0.0
+
+    for j_domain, j_years in job_domains_map.items():
+        weight = max(0.5, j_years)
+
+        best_match_years = 0.0
+        max_similarity = 0.0
+
+        j_emb = model.encode(j_domain, convert_to_tensor=True)
+
+        for c_domain, c_years in cv_domains_map.items():
+            c_emb = model.encode(c_domain, convert_to_tensor=True)
+            sim = util.cos_sim(j_emb, c_emb).item()
+
+            if sim > max_similarity:
+                max_similarity = sim
+                if sim >= threshold:
+                    best_match_years = c_years
+                else:
+                    best_match_years = 0.0
+
+        if j_years <= 0.1:
+            domain_score = 1.0
+        else:
+            domain_score = min(1.0, best_match_years / j_years)
+
+        total_weighted_score += domain_score * weight
+        total_weight += weight
+
+    if total_weight == 0:
+        return 0.0
+    return float(total_weighted_score / total_weight)
+
+
