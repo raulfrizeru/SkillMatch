@@ -188,3 +188,39 @@ def calculate_soft_skills_score(cv_json: dict, job_json: dict, threshold_high: f
     final_score = total_candidate_points / max_potential_score
     return float(max(0.0, min(1.0, final_score)))
 
+def calculate_interview_score(interviews_list: list, job_json: dict, target_company: str) -> float:
+    if not interviews_list:
+        return 0.0
+
+    current_job_domains = list(set([item.get('domain', '').lower() for item in job_json.get('experience', []) if item.get('domain')]))
+    job_domain_embs = model.encode(current_job_domains, convert_to_tensor=True)
+    best_weighted_score = 0.0
+    target_company = target_company.lower().strip()
+
+    for interview in interviews_list:
+        raw_score = float(interview.get('score', 0.0))
+        interview_company = interview.get('company', '').lower().strip()
+        interview_title = interview.get('job_title', '').lower().strip()
+
+        title_emb = model.encode(interview_title, convert_to_tensor=True)
+        cosine_scores = util.cos_sim(title_emb, job_domain_embs)[0]
+        max_sim = float(np.max(cosine_scores.cpu().numpy()))
+        is_same_domain = max_sim >= 0.8
+        is_same_company = interview_company == target_company
+
+        relevance_factor = 0.0
+
+        if is_same_company and is_same_domain:
+            relevance_factor = 1.0
+        elif is_same_company and not is_same_domain:
+            relevance_factor = 0.4
+        elif not is_same_company and is_same_domain:
+            relevance_factor = 0.8
+        else:
+            relevance_factor = 0.2
+
+        final_score_for_this_interview = raw_score * relevance_factor
+
+        if final_score_for_this_interview > best_weighted_score:
+                best_weighted_score = final_score_for_this_interview
+    return float(best_weighted_score)
