@@ -193,6 +193,9 @@ def calculate_interview_score(interviews_list: list, job_json: dict, target_comp
         return 0.0
 
     current_job_domains = list(set([item.get('domain', '').lower() for item in job_json.get('experience', []) if item.get('domain')]))
+    if not current_job_domains:
+        print("No job domains found for interview score calculation.")
+        return 0.0
     job_domain_embs = model.encode(current_job_domains, convert_to_tensor=True)
     best_weighted_score = 0.0
     target_company = target_company.lower().strip()

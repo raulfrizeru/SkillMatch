@@ -19,7 +19,7 @@ OLLAMA_API_KEY = "7892c508c6544ddcbe4c36dbf3e571ed.TzoP9HYhqt8O7RaEvIo52WRo"
 
 CLIENT = Client(host="https://ollama.com",
                 headers={'Authorization': 'Bearer '+OLLAMA_API_KEY},
-                timeout=30
+                timeout=50
 )
 MODEL_NAME = "deepseek-v3.1:671b"
 
@@ -98,7 +98,7 @@ TEXT TO ANALYZE:
 {text}
 ---
 
-RETURN ONLY THE JSON OBJECT.
+RETURN ONLY THE JSON OBJECT(Starting with "{{" and ending with "}}").
 """
 
     return prompt_template.strip()
@@ -113,9 +113,9 @@ def extract_structured_data(text_cleaned: str, is_job: bool) -> dict:
             'content': prompt,
         },
     ]
-
+    response=""
     try:
-        response_obj=CLIENT.chat(MODEL_NAME, messages=messages)
+        response_obj=CLIENT.chat(MODEL_NAME, messages=messages, stream=False)
         response = response_obj['message']['content']
         data_dict = json.loads(response)
         validated = ExtractedData.model_validate(data_dict).model_dump()
@@ -123,6 +123,9 @@ def extract_structured_data(text_cleaned: str, is_job: bool) -> dict:
 
     except ResponseError as e:
         print(f"Ollama API Error: {e}. Check if Ollama is running.")
+        return empty_data
+    except json.JSONDecodeError as e:
+        print(f"JSON Decode Error: {e}")
         return empty_data
     except ValidationError as ve:
         print(f"Validation Error: {ve}. Check if the model followed the schema.")
