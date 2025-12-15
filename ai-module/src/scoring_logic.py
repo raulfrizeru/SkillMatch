@@ -22,17 +22,13 @@ def generate_dense_text_from_json(data_json: dict) -> str:
 
 def calculate_semantic_score(cv_json: dict, job_json: dict) -> float:
     cv_text_dense = generate_dense_text_from_json(cv_json)
-    print(cv_text_dense)
     job_text_dense = generate_dense_text_from_json(job_json)
-    print(job_text_dense)
 
     if not cv_text_dense or not job_text_dense:
         return 0.0
 
     emb_cv = model.encode(cv_text_dense, convert_to_tensor=True)
-    print(emb_cv)
     emb_job = model.encode(job_text_dense, convert_to_tensor=True)
-    print(emb_job)
 
     cos_sim = util.cos_sim(emb_cv, emb_job).item()
 

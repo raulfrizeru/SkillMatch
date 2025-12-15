@@ -2,6 +2,8 @@ from typing import List
 from pydantic import BaseModel, Field, ValidationError
 import json
 from ollama import Client, ResponseError
+import os
+from dotenv import load_dotenv
 
 class ExperienceItem(BaseModel):
     skill: str = Field(..., description="The exact name of the skill, framework or tool.")
@@ -14,8 +16,9 @@ class ExtractedData(BaseModel):
     soft_skills: List[str] = Field(..., description="List of deduced soft skills (e.g. 'communication', 'problem solving').")
     model_config = {"extra": "ignore"}
 
+load_dotenv()
 SCHEMA_JSON = ExtractedData.model_json_schema()
-OLLAMA_API_KEY = "7892c508c6544ddcbe4c36dbf3e571ed.TzoP9HYhqt8O7RaEvIo52WRo"
+OLLAMA_API_KEY = os.getenv("API_KEY")
 
 CLIENT = Client(host="https://ollama.com",
                 headers={'Authorization': 'Bearer '+OLLAMA_API_KEY},
