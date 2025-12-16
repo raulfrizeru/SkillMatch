@@ -2,8 +2,6 @@ import data_extraction
 import llm_handler
 import scoring_logic
 
-########real##########real#############real##########real#########real##########real############real
-
 ##data
 interviews_list=[{'company': 'AUMOVIO', 'job_title': 'Software Intern Engineer', 'score': 0.74}]
 target_company='Storyteller'
@@ -95,39 +93,43 @@ We’ll review your submission together, pair on a small improvement or bug, and
 
 And that's it!"""
 
-#1. Extract text from CV PDF
-Cv_raw=data_extraction.extract_text_from_pdf(CvSource)
+def main(CvSource: str, Job_raw: str, interviews_list: list):
+    # 1. Extract text from CV PDF
+    target_company=Job_raw.split('\n', 1)[0]
+    Cv_raw = data_extraction.extract_text_from_pdf(CvSource)
 
-#2. Clean CV and Job_description for LLM
-Cv_cleaned_for_llm=data_extraction.clean_text_for_llm(Cv_raw)
-Job_cleaned_for_llm=data_extraction.clean_text_for_llm(Job_raw)
+    # 2. Clean CV and Job_description for LLM
+    Cv_cleaned_for_llm = data_extraction.clean_text_for_llm(Cv_raw)
+    Job_cleaned_for_llm = data_extraction.clean_text_for_llm(Job_raw)
 
-#3. Extract structured data from CV and Job_description
-CV_JSON=llm_handler.extract_structured_data(Cv_cleaned_for_llm, is_job=False)
-JOB_JSON=llm_handler.extract_structured_data(Job_cleaned_for_llm, is_job=True)
+    # 3. Extract structured data from CV and Job_description
+    CV_JSON = llm_handler.extract_structured_data(Cv_cleaned_for_llm, is_job=False)
+    JOB_JSON = llm_handler.extract_structured_data(Job_cleaned_for_llm, is_job=True)
 
-#4. Semantic Analysis
-SEMANTIC_SCORE=scoring_logic.calculate_semantic_score(CV_JSON, JOB_JSON)
+    # 4. Semantic Analysis
+    SEMANTIC_SCORE = scoring_logic.calculate_semantic_score(CV_JSON, JOB_JSON)
 
-#5. Skills Analysis
-SKILLS_SCORE=scoring_logic.calculate_skill_score(CV_JSON, JOB_JSON)
+    # 5. Skills Analysis
+    SKILLS_SCORE = scoring_logic.calculate_skill_score(CV_JSON, JOB_JSON)
 
-#6. Domain Analysis
-DOMAIN_SCORE=scoring_logic.calculate_domain_score(CV_JSON, JOB_JSON)
+    # 6. Domain Analysis
+    DOMAIN_SCORE = scoring_logic.calculate_domain_score(CV_JSON, JOB_JSON)
 
-#7. Experience Analysis
-EXPERIENCE_SCORE=scoring_logic.calculate_experience_score(CV_JSON, JOB_JSON)
+    # 7. Experience Analysis
+    EXPERIENCE_SCORE = scoring_logic.calculate_experience_score(CV_JSON, JOB_JSON)
 
-#8. Soft Skills Analysis
-SOFT_SKILLS_SCORE=scoring_logic.calculate_soft_skills_score(CV_JSON, JOB_JSON)
+    # 8. Soft Skills Analysis
+    SOFT_SKILLS_SCORE = scoring_logic.calculate_soft_skills_score(CV_JSON, JOB_JSON)
 
-#9. Interview Analysis
-INTERVIEW_SCORE=scoring_logic.calculate_interview_score(interviews_list, JOB_JSON, target_company)
+    # 9. Interview Analysis
+    INTERVIEW_SCORE = scoring_logic.calculate_interview_score(interviews_list, JOB_JSON, target_company)
 
-#10. Final Score calculation
-FINAL_SCORE=scoring_logic.calculate_final_score(SEMANTIC_SCORE, SKILLS_SCORE, DOMAIN_SCORE, EXPERIENCE_SCORE, SOFT_SKILLS_SCORE, INTERVIEW_SCORE)
+    # 10. Final Score calculation
+    FINAL_SCORE = scoring_logic.calculate_final_score(SEMANTIC_SCORE, SKILLS_SCORE, DOMAIN_SCORE, EXPERIENCE_SCORE,
+                                                      SOFT_SKILLS_SCORE, INTERVIEW_SCORE)
 
-####################################################################################################
+    print(FINAL_SCORE)
 
-print(FINAL_SCORE)
 
+if __name__ == "__main__":
+    main(CvSource, Job_raw, interviews_list)

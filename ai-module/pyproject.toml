@@ -1,0 +1,11 @@
+[project]
+name = "ai-module"
+version = "0.1.0"
+description = "AI module for matching candidates with jobs"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "docling>=2.65.0",
+    "ollama>=0.6.1",
+    "sentence-transformers>=5.2.0",
+]
