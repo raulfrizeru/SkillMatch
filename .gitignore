@@ -205,3 +205,20 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# --- JAVA & MAVEN ---
+target/
+*.class
+*.jar
+*.war
+.mvn/
+mvnw
+mvnw.cmd
+
+# --- INTELLIJ IDEA ---
+.idea/
+*.iml
+*.iws
+out/
+
+desktop.ini
