@@ -1,3 +1,6 @@
+import json
+import sys
+import base64  # <--- IMPORT NOU
 import data_extraction
 import llm_handler
 import scoring_logic
@@ -128,8 +131,35 @@ def main(CvSource: str, Job_raw: str, interviews_list: list):
     FINAL_SCORE = scoring_logic.calculate_final_score(SEMANTIC_SCORE, SKILLS_SCORE, DOMAIN_SCORE, EXPERIENCE_SCORE,
                                                       SOFT_SKILLS_SCORE, INTERVIEW_SCORE)
 
-    print(FINAL_SCORE)
+    print(json.dumps(FINAL_SCORE))
+
+
 
 
 if __name__ == "__main__":
-    main(CvSource, Job_raw, interviews_list)
+    if len(sys.argv) < 4:
+        print("Error: Not enough arguments provided.")
+        sys.exit(1)
+
+    # Arg 1: Calea CV (Rămâne string normal, că e doar o cale de fișier)
+    arg1_cv_path = sys.argv[1]
+
+    # Arg 2: Job Description (Vine codat Base64 din Java pentru a păstra newlines)
+    try:
+        decoded_job_bytes = base64.b64decode(sys.argv[2])
+        arg2_job_text = decoded_job_bytes.decode('utf-8')
+    except Exception as e:
+        print(f"Error decoding Job Description: {e}")
+        sys.exit(1)
+
+    # Arg 3: JSON List (Vine codat Base64 din Java pentru a păstra ghilimelele)
+    try:
+        decoded_json_bytes = base64.b64decode(sys.argv[3])
+        json_str = decoded_json_bytes.decode('utf-8')
+        arg3_interviews = json.loads(json_str)
+    except Exception as e:
+        print(f"Error decoding Interviews JSON: {e}")
+        sys.exit(1)
+
+    # Rulăm funcția principală cu datele curate
+    main(arg1_cv_path, arg2_job_text, arg3_interviews)

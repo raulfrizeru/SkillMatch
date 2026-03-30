@@ -22,7 +22,7 @@ OLLAMA_API_KEY = os.getenv("API_KEY")
 
 CLIENT = Client(host="https://ollama.com",
                 headers={'Authorization': 'Bearer '+OLLAMA_API_KEY},
-                timeout=50
+                timeout=180
 )
 MODEL_NAME = "deepseek-v3.1:671b"
 

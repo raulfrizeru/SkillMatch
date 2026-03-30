@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Lista Utilizatori - SkillMatch</title>
+    <head th:replace="~{fragments/navbar :: bootstrap-css}"></head>
+</head>
+<body class="bg-light">
+
+<div th:replace="~{fragments/navbar :: menu}"></div>
+
+<div class="container mt-5 mb-5">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-primary fw-bold">Users</h2>
+        <a th:href="@{/users/new}" class="btn btn-success shadow-sm">
+            Add New User
+        </a>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            <table class="table table-hover table-striped mb-0">
+                <thead class="table-dark">
+                <tr>
+                    <th class="ps-4">ID</th>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="u : ${users}">
+                    <td class="ps-4 fw-bold text-secondary" th:text="${u.id}"></td>
+                    <td th:text="${u.username}"></td>
+                    <td th:text="${u.email}"></td>
+                    <td>
+                        <span class="badge"
+                              th:classappend="${u.role == 'EMPLOYER' ? 'bg-success' : (u.role == 'CANDIDATE' ? 'bg-info text-dark' : 'bg-secondary')}"
+                              th:text="${u.role}">
+                        </span>
+                    </td>
+                    <td>
+                        <a th:href="@{/users/edit/{id}(id=${u.id})}" class="btn btn-sm btn-outline-primary">Edit</a>
+                        <a th:href="@{/users/delete/{id}(id=${u.id})}" class="btn btn-sm btn-outline-danger">Delete</a>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(users)}">
+                    <td colspan="3" class="text-center py-4 text-muted">
+                        No users found.
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>
