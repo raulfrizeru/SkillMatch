@@ -4,8 +4,10 @@ import com.licenta.skillmatch.dto.RegisterDto;
 import com.licenta.skillmatch.dto.UserEditDto;
 import com.licenta.skillmatch.dto.UserListDto;
 import com.licenta.skillmatch.entity.User;
+import com.licenta.skillmatch.repository.UserRepository;
 import com.licenta.skillmatch.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,6 +21,15 @@ import java.util.List;
 public class UserController {
     @Autowired
     private UserService userService;
+    private final PasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
+
+    public UserController(UserService userService, PasswordEncoder passwordEncoder, UserRepository userRepository) {
+        this.userService = userService;
+        this.passwordEncoder = passwordEncoder;
+        this.userRepository = userRepository;
+    }
+
     @GetMapping("/users")
     public String viewUsersPage(Model model){
         List<UserListDto> listUsers = userService.findAllUsers();
@@ -45,18 +56,19 @@ public class UserController {
     public String showEditUserForm(@PathVariable("id") Long id, Model model) {
         UserEditDto userDto = userService.getUserForEdit(id);
         model.addAttribute("user", userDto);
-        return "user-edit";
+        return "edit-user";
     }
 
-    @PostMapping("/users/edit/{id}")
-    public String saveEditedUser(@PathVariable("id") Long id, @ModelAttribute("user") UserEditDto userDto) {
-        userService.updateUser(id, userDto);
-        return "redirect:/users";
-    }
+//    @PostMapping("/users/edit/{id}")
+//    public String saveEditedUser(@PathVariable("id") Long id, @ModelAttribute("user") UserEditDto userDto) {
+//        userService.updateUser(id, userDto);
+//        return "redirect:/users";
+//    }
 
     @GetMapping("/users/delete/{id}")
     public String deleteUser(@PathVariable("id") Long id){
         userService.deleteUser(id);
         return "redirect:/users";
     }
+
 }

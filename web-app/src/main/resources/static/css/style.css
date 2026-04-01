@@ -2,42 +2,56 @@
     INDEX/HOME PAGE
    ========================================= */
 
-.hero-section {
-    background: linear-gradient(to right, #0d5cda 0%, #0d5cda 40%, rgba(13, 92, 218, 0.6) 70%, rgba(13, 92, 218, 0) 100%),
-    url('https://images.unsplash.com/photo-1600880292203-757bb62b4baf?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80') center/cover no-repeat;
-    color: white;
+html { scroll-behavior: smooth; }
+.section { min-height: 50vh; padding: 40px 0; }
+.section-icon { font-size: 70px; }
 
-    padding: 160px 0 160px 0;
-    min-height: 500px;
+/* =========================================
+    ABOUT PAGE
+   ========================================= */
+
+.about-hero {
+    background: linear-gradient(135deg, #f0f8ff 0%, #e8f0ff 100%);
+    padding: 100px 0;
+    min-height: 60vh;
 }
-.hero-title {
-    font-size: 3rem;
-    font-weight: 700;
-    line-height: 1.2;
-    max-width: 600px;
+
+.about-section {
+    padding: 60px 0;
+    background: linear-gradient(135deg, #e7f1ff 0%, #f0e8ff 100%);
 }
-.cards-container {
-    margin-top: -80px;
-    position: relative;
-    z-index: 10;
+
+.about-section:nth-child(odd) {
+    background: linear-gradient(135deg, #fff0e8 0%, #f0e8ff 100%);
 }
-.role-card {
-    background: white;
-    border-radius: 15px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    text-decoration: none;
-    color: inherit;
-    display: block;
+
+.about-section-alt {
+    padding: 60px 0;
+    background: linear-gradient(135deg, #e8f5ff 0%, #f0f0ff 100%);
 }
-.role-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 15px 40px rgba(0,0,0,0.15);
-    color: inherit;
+
+.about-card {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(13, 92, 218, 0.1);
 }
-.icon-large {
-    font-size: 4rem;
-    color: #0d5cda;
+
+.about-feature-card {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(13, 92, 218, 0.1);
+    transition: all 0.3s ease;
+}
+
+.about-feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(13, 92, 218, 0.15);
+}
+
+.about-cta {
+    background: linear-gradient(135deg, #ffe8f0 0%, #f0e8ff 100%);
+    padding: 80px 0;
+    min-height: 50vh;
 }
 
 /* =========================================
@@ -50,3 +64,24 @@
 .navbar-nav .nav-item {
     margin: 0 2px;
 }
+
+/* =========================================
+    AUTHENTICATION
+   ========================================= */
+
+.auth-wrapper {
+    padding-top: 100px;
+    padding-bottom: 50px;
+}
+
+.auth-card {
+    max-width: 450px;
+    margin: 0 auto;
+    border-radius: 20px;
+}
+
+.form-floating:focus-within label {
+    color: #0d5cda;
+    font-weight: bold;
+}
+

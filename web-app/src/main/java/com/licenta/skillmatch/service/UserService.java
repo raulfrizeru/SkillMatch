@@ -3,9 +3,14 @@ package com.licenta.skillmatch.service;
 import com.licenta.skillmatch.dto.RegisterDto;
 import com.licenta.skillmatch.dto.UserEditDto;
 import com.licenta.skillmatch.dto.UserListDto;
+import com.licenta.skillmatch.entity.Candidate;
+import com.licenta.skillmatch.entity.Employer;
 import com.licenta.skillmatch.entity.User;
+import com.licenta.skillmatch.entity.UserGroup;
+import com.licenta.skillmatch.repository.UserGroupRepository;
 import com.licenta.skillmatch.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,6 +20,12 @@ import java.util.stream.Collectors;
 public class UserService {
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private UserGroupRepository userGroupRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     public List<UserListDto> findAllUsers(){
         List<User> users = userRepository.findAll();
@@ -61,12 +72,36 @@ public class UserService {
     }
 
     public void registerNewUser(RegisterDto registerDto) {
-        // Aici pe viitor vei pune un IF: dacă e Candidat, creezi Candidate.
-        // Dacă e Angajator, creezi Employer. Deocamdată facem un User de bază.
-        User user = new User();
+        if (!registerDto.getPassword().equals(registerDto.getConfirmPassword())) {
+            throw new IllegalArgumentException("Passwords do not match!");
+        }
+
+        User user;
+        if ("CANDIDATE".equalsIgnoreCase(registerDto.getRole())) {
+            Candidate candidate = new Candidate();
+            candidate.setFirstName(registerDto.getFirstName());
+            candidate.setLastName(registerDto.getLastName());
+            user = candidate;
+        } else if ("EMPLOYER".equalsIgnoreCase(registerDto.getRole())) {
+            Employer employer = new Employer();
+            employer.setCompanyName(registerDto.getCompanyName());
+            employer.setDescription("");
+            user = employer;
+        } else {
+            throw new IllegalArgumentException("Invalid role selected");
+        }
+
         user.setUsername(registerDto.getUsername());
         user.setEmail(registerDto.getEmail());
-        user.setPassword(registerDto.getPassword()); // Atenție, pe viitor o vom cripta!
+        user.setPassword(passwordEncoder.encode(registerDto.getPassword()));
+
+        UserGroup group = userGroupRepository.findByGroupName(registerDto.getRole().toUpperCase());
+        if (group == null) {
+            group = new UserGroup();
+            group.setGroupName(registerDto.getRole().toUpperCase());
+            userGroupRepository.save(group);
+        }
+        user.setUserGroup(group);
 
         userRepository.save(user);
     }

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:fragment="bootstrap-css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link th:href="@{/css/style.css}" rel="stylesheet" />
+</head>
+<body>
+
+<nav th:fragment="menu" class="navbar navbar-expand-xl navbar-light bg-white shadow-sm py-3 fixed-top">
+    <div class="container-fluid px-4"> <a class="navbar-brand fw-bold text-primary" th:href="@{/}">
+        <i class="bi bi-hexagon-fill me-2"></i>SkillMatch
+    </a>
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav mx-auto fw-medium text-secondary">
+                <li class="nav-item"><a class="nav-link" th:href="@{/}">Home</a></li>
+                <li class="nav-item"><a class="nav-link" th:href="@{/about}">About Us</a></li>
+
+                <th:block sec:authorize="hasRole('CANDIDATE')">
+                    <li class="nav-item"><a class="nav-link" th:href="@{/dashboard}">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/applications}">My Applications</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/jobs}">Job Search</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/profile}">Profile</a></li>
+                </th:block>
+
+                <th:block sec:authorize="hasRole('EMPLOYER')">
+                    <li class="nav-item"><a class="nav-link" th:href="@{/dashboard}">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/posts}">My Posts</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/candidates}">My Candidates</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/profile}">Profile</a></li>
+                </th:block>
+            </ul>
+
+            <div class="d-flex gap-2">
+                <th:block sec:authorize="!isAuthenticated()">
+                    <a th:href="@{/login}" class="btn btn-outline-primary px-3 fw-bold">Log In</a>
+                    <a th:href="@{/users/new}" class="btn btn-primary px-3 fw-bold">Sign Up</a>
+                </th:block>
+
+                <th:block sec:authorize="isAuthenticated()">
+                    <form th:action="@{/logout}" method="post" class="m-0">
+                        <button type="submit" class="btn btn-danger px-3 fw-bold">Log Out</button>
+                    </form>
+                </th:block>
+            </div>
+        </div>
+    </div>
+</nav>
+
+</body>
+</html>

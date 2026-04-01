@@ -1,29 +1,106 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>New User</title>
+    <title>SkillMatch - Create Account</title>
+    <head th:replace="~{fragments/navbar :: bootstrap-css}"></head>
 </head>
-<body>
-<h2>User Register</h2>
 
-<form th:action="@{/users/save}" th:object="${user}" method="post">
+<body class="bg-light d-flex flex-column min-vh-100">
 
-    <label>Username:</label>
-    <input type="text" th:field="*{username}" placeholder="Ex: alexP2134" required />
-    <br/>
+<div th:replace="~{fragments/navbar :: menu}"></div>
 
-    <label>Email:</label>
-    <input type="email" th:field="*{email}" placeholder="Ex: email@gmail.com" required />
-    <br/>
+<div class="container auth-wrapper flex-grow-1 d-flex align-items-center">
+    <div class="card shadow-lg border-0 auth-card w-100 p-4 p-md-5">
 
-    <label>Password:</label>
-    <input type="password" th:field="*{password}" required />
-    <br/>
+        <div class="text-center mb-4">
+            <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-inline-flex p-3 mb-3">
+                <i class="bi bi-person-plus-fill fs-2"></i>
+            </div>
+            <h2 class="fw-bold text-dark">Create an Account</h2>
+            <p class="text-muted">Join SkillMatch to find your perfect match.</p>
+        </div>
 
-    <button type="submit">Save</button>
-</form>
+        <form th:action="@{/users/save}" th:object="${user}" method="post">
 
-<br/>
-<a th:href="@{/users}">Cancel</a>
+            <div class="mb-4">
+                <label class="form-label text-secondary fw-medium mb-2 small">I want to register as a:</label>
+                <select class="form-select form-select-lg text-secondary" name="role" id="roleSelector" required onchange="toggleFields()">
+                    <option value="" selected disabled>Select your role...</option>
+                    <option value="CANDIDATE">Candidate (Looking for a job)</option>
+                    <option value="EMPLOYER">Employer (Looking to hire)</option>
+                </select>
+            </div>
+
+            <div id="candidateFields" style="display: none;">
+                <div class="form-floating mb-3">
+                    <input type="text" class="form-control" id="firstName" th:field="*{firstName}" placeholder="First Name" />
+                    <label for="firstName">First Name</label>
+                </div>
+                <div class="form-floating mb-3">
+                    <input type="text" class="form-control" id="lastName" th:field="*{lastName}" placeholder="Last Name" />
+                    <label for="lastName">Last Name</label>
+                </div>
+            </div>
+
+            <div id="employerFields" style="display: none;">
+                <div class="form-floating mb-3">
+                    <input type="text" class="form-control" id="companyName" th:field="*{companyName}" placeholder="Company Name" />
+                    <label for="companyName">Company Name</label>
+                </div>
+            </div>
+
+            <div class="form-floating mb-3">
+                <input type="text" class="form-control" id="username" th:field="*{username}" placeholder="Username" required />
+                <label for="username"><i class="bi bi-person me-2"></i>Username</label>
+            </div>
+
+            <div class="form-floating mb-3">
+                <input type="email" class="form-control" id="email" th:field="*{email}" placeholder="name@example.com" required />
+                <label for="email"><i class="bi bi-envelope me-2"></i>Email address</label>
+            </div>
+
+            <div class="form-floating mb-3">
+                <input type="password" class="form-control" id="password" th:field="*{password}" placeholder="Password" required />
+                <label for="password"><i class="bi bi-lock me-2"></i>Password</label>
+            </div>
+
+            <div class="form-floating mb-3">
+                <input type="password" class="form-control" id="confirmPassword" th:field="*{confirmPassword}" placeholder="Confirm Password" required />
+                <label for="confirmPassword"><i class="bi bi-lock-fill me-2"></i>Confirm Password</label>
+            </div>
+
+
+            <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold shadow-sm mb-3">
+                Sign Up <i class="bi bi-arrow-right ms-2"></i>
+            </button>
+
+        </form>
+
+        <div class="text-center mt-3">
+            <span class="text-muted">Already have an account?</span>
+            <a th:href="@{/login}" class="text-primary fw-bold text-decoration-none">Log in here</a>
+        </div>
+
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    function toggleFields() {
+        var role = document.getElementById("roleSelector").value;
+        var candFields = document.getElementById("candidateFields");
+        var empFields = document.getElementById("employerFields");
+        if (role === 'CANDIDATE') {
+            candFields.style.display = 'block';
+            empFields.style.display = 'none';
+        } else if (role === 'EMPLOYER') {
+            candFields.style.display = 'none';
+            empFields.style.display = 'block';
+        } else {
+            candFields.style.display = 'none';
+            empFields.style.display = 'none';
+        }
+    }
+</script>
 </body>
 </html>
