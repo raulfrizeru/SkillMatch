@@ -4,60 +4,60 @@
     <title>SkillMatch - Log In</title>
     <head th:replace="~{fragments/navbar :: bootstrap-css}"></head>
 </head>
-<body class="bg-light d-flex flex-column min-vh-100">
+<body class="d-flex flex-column min-vh-100">
 
 <div th:replace="~{fragments/navbar :: menu}"></div>
 
-<div class="container auth-wrapper flex-grow-1 d-flex align-items-center">
-    <div class="card shadow-lg border-0 auth-card w-100 p-4 p-md-5">
+<div class="container flex-grow-1 d-flex align-items-center justify-content-center pt-5 mt-5 mb-4">
+    <div class="glass-section-card w-100 p-4 p-md-5" style="max-width: 450px; padding: 3rem !important;">
 
         <div class="text-center mb-4">
-            <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-inline-flex p-3 mb-3">
+            <div class="bg-white bg-opacity-50 text-teal rounded-circle d-inline-flex p-3 mb-3 shadow-sm" style="border: 1px solid rgba(255,255,255,0.8);">
                 <i class="bi bi-box-arrow-in-right fs-2"></i>
             </div>
-            <h2 class="fw-bold text-dark">Welcome Back</h2>
-            <p class="text-muted">Log in to your SkillMatch account.</p>
+            <h2 class="fw-bolder text-dark-navy">Welcome Back</h2>
+            <p class="text-dark opacity-75">Log in to your SkillMatch account.</p>
         </div>
 
-        <div th:if="${param.error}" class="alert alert-danger shadow-sm text-center py-2 text-danger bg-danger bg-opacity-10 border-danger border-opacity-25" role="alert">
-            <i class="bi bi-exclamation-triangle-fill me-2"></i>Invalid username or password.
+        <div th:if="${param.error}" class="alert alert-danger shadow-sm text-center py-2 text-danger bg-danger bg-opacity-10 border-danger border-opacity-25 rounded-pill" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>Invalid credentials.
         </div>
 
-        <div th:if="${param.logout}" class="alert alert-success shadow-sm text-center py-2 text-success bg-success bg-opacity-10 border-success border-opacity-25" role="alert">
-            <i class="bi bi-check-circle-fill me-2"></i>You have been logged out successfully.
+        <div th:if="${param.logout}" class="alert alert-success shadow-sm text-center py-2 text-success bg-success bg-opacity-10 border-success border-opacity-25 rounded-pill" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>Logged out successfully.
         </div>
 
         <form th:action="@{/login}" method="post">
 
             <div class="form-floating mb-3">
-                <input type="text" class="form-control" id="username" name="username" placeholder="Username" required autofocus />
-                <label for="username"><i class="bi bi-person me-2"></i>Username</label>
+                <input type="text" class="form-control bg-white bg-opacity-75 border-0 shadow-sm" id="username" name="username" placeholder="Username" required autofocus />
+                <label for="username" class="text-secondary"><i class="bi bi-person me-2"></i>Username</label>
             </div>
 
             <div class="form-floating mb-3">
-                <input type="password" class="form-control" id="password" name="password" placeholder="Password" required />
-                <label for="password"><i class="bi bi-lock me-2"></i>Password</label>
+                <input type="password" class="form-control bg-white bg-opacity-75 border-0 shadow-sm" id="password" name="password" placeholder="Password" required />
+                <label for="password" class="text-secondary"><i class="bi bi-lock me-2"></i>Password</label>
             </div>
 
-            <div class="d-flex justify-content-between align-items-center mb-4 mt-2">
+            <div class="d-flex justify-content-between align-items-center mb-4 mt-2 px-1">
                 <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="remember-me" id="rememberMe">
-                    <label class="form-check-label text-secondary small" for="rememberMe">
+                    <input class="form-check-input border-secondary" type="checkbox" name="remember-me" id="rememberMe">
+                    <label class="form-check-label text-dark opacity-75 small" for="rememberMe">
                         Remember me
                     </label>
                 </div>
-                <a href="#" class="text-primary text-decoration-none small fw-medium">Forgot password?</a>
+                <a href="#" class="text-teal text-decoration-none small fw-bold">Forgot password?</a>
             </div>
 
-            <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold shadow-sm mb-3">
+            <button type="submit" class="btn btn-teal btn-lg w-100 fw-bold shadow-sm mb-3 rounded-pill">
                 Log In <i class="bi bi-arrow-right ms-2"></i>
             </button>
 
         </form>
 
         <div class="text-center mt-3">
-            <span class="text-muted">Don't have an account?</span>
-            <a th:href="@{/users/new}" class="text-primary fw-bold text-decoration-none">Sign up here</a>
+            <span class="text-dark opacity-75">Don't have an account?</span>
+            <a th:href="@{/users/new}" class="text-teal fw-bolder text-decoration-none ms-1">Sign up here</a>
         </div>
 
     </div>

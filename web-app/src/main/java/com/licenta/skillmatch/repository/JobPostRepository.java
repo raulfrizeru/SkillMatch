@@ -8,5 +8,5 @@ import java.util.List;
 
 @Repository
 public interface JobPostRepository extends JpaRepository<JobPost, Long> {
-    public List<JobPost> findByIsActiveTrue(long id);
+    public List<JobPost> findByIsActiveTrue();
 }

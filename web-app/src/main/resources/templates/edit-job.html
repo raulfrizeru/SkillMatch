@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>SkillMatch - Edit Job Post</title>
+    <head th:replace="~{fragments/navbar :: bootstrap-css}"></head>
+</head>
+<body class="d-flex flex-column min-vh-100">
+
+<div th:replace="~{fragments/navbar :: menu}"></div>
+
+<div class="container flex-grow-1 d-flex align-items-center justify-content-center pt-5 mt-5 mb-4">
+    <div class="glass-section-card w-100 p-4 p-md-5" style="max-width: 650px; padding: 3rem !important;">
+
+        <div class="text-center mb-4">
+            <div class="bg-white bg-opacity-50 text-teal rounded-circle d-inline-flex p-3 mb-3 shadow-sm" style="border: 1px solid rgba(255,255,255,0.8);">
+                <i class="bi bi-pencil-square fs-2"></i>
+            </div>
+            <h2 class="fw-bolder text-dark-navy">Edit Job Post</h2>
+            <p class="text-dark opacity-75">Update your job post details below.</p>
+        </div>
+
+        <form th:action="@{/jobs/edit/{id}(id=${job.id})}" th:object="${job}" method="post">
+
+            <input type="hidden" th:field="*{id}" />
+
+            <div class="form-floating mb-3">
+                <input type="text" class="form-control bg-white bg-opacity-75 border-0 shadow-sm" id="title" th:field="*{title}" placeholder="Title" required />
+                <label for="title" class="text-secondary"><i class="bi bi-briefcase me-2"></i>Job Title</label>
+            </div>
+
+            <div class="form-floating mb-4">
+                <textarea class="form-control bg-white bg-opacity-75 border-0 shadow-sm" id="description" th:field="*{description}" placeholder="e.g. This job requires C# and mySQL..." required style="height: 180px;"></textarea>
+                <label for="description" class="text-secondary"><i class="bi bi-file-text me-2"></i>Description</label>
+            </div>
+
+            <div class="mb-4 bg-white bg-opacity-50 p-3 rounded-4 border shadow-sm" style="border-color: rgba(255,255,255,0.8) !important;">
+                <label for="isActive" class="form-label text-dark-navy fw-bold mb-2 small"><i class="bi bi-toggle-on me-2 text-teal"></i>Status</label>
+                <select class="form-select border-0 shadow-sm bg-white bg-opacity-75" id="isActive" th:field="*{isActive}" required>
+                    <option th:value="true">Active</option>
+                    <option th:value="false">Closed</option>
+                </select>
+            </div>
+
+            <div class="d-flex gap-3 mt-4">
+                <a th:href="@{/jobs/{id}(id=${job.id})}" class="btn btn-glass-outline rounded-pill w-50 py-2 fw-bold d-flex align-items-center justify-content-center">
+                    Cancel
+                </a>
+                <button type="submit" class="btn btn-teal rounded-pill w-50 py-2 fw-bold shadow-sm d-flex align-items-center justify-content-center">
+                    Save Changes <i class="bi bi-check2-circle ms-2"></i>
+                </button>
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+<footer th:replace="~{fragments/footer :: subsol}"></footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

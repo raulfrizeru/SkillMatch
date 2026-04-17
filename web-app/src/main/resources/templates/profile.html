@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - SkillMatch</title>
+    <head th:replace="~{fragments/navbar :: bootstrap-css}"></head>
+</head>
+<body class="d-flex flex-column min-vh-100">
+
+<div th:replace="~{fragments/navbar :: menu}"></div>
+
+<div class="container flex-grow-1 pt-5 mt-5 mb-5">
+
+    <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show rounded-4 mb-4" role="alert">
+        <i class="bi bi-check-circle me-2"></i>
+        <span th:text="${successMessage}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show rounded-4 mb-4" role="alert">
+        <i class="bi bi-exclamation-circle me-2"></i>
+        <span th:text="${errorMessage}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <div class="d-flex align-items-center mb-5">
+        <h1 class="fw-bolder text-dark-navy mb-0">My Profile</h1>
+        <a th:href="@{/dashboard}" class="btn btn-glass-outline rounded-pill px-4 py-2 fw-bold ms-auto">
+            <i class="bi bi-arrow-left me-2"></i> Back to Dashboard
+        </a>
+    </div>
+
+    <!-- Candidate Profile -->
+    <div th:if="${role == 'CANDIDATE'}" class="row">
+        <div class="col-lg-8 mx-auto">
+            <form th:action="@{/profile/candidate/update}" method="post" enctype="multipart/form-data">
+                <div class="glass-section-card p-5 mb-4">
+                    <h3 class="text-dark-navy fw-bold mb-4">
+                        <i class="bi bi-person-circle me-2 text-teal"></i> Personal Information
+                    </h3>
+
+                    <div class="mb-3">
+                        <label for="candidateUsername" class="form-label fw-bold text-dark-navy">Username</label>
+                        <input type="text" class="form-control rounded-3" id="candidateUsername" name="username"
+                               th:value="${profile.username}" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="candidateEmail" class="form-label fw-bold text-dark-navy">Email</label>
+                        <input type="email" class="form-control rounded-3" id="candidateEmail" name="email"
+                               th:value="${profile.email}" required>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="candidateFirstName" class="form-label fw-bold text-dark-navy">First Name</label>
+                            <input type="text" class="form-control rounded-3" id="candidateFirstName" name="firstName"
+                                   th:value="${profile.firstName}" required>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="candidateLastName" class="form-label fw-bold text-dark-navy">Last Name</label>
+                            <input type="text" class="form-control rounded-3" id="candidateLastName" name="lastName"
+                                   th:value="${profile.lastName}" required>
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <!-- CV Section -->
+                    <h4 class="text-dark-navy fw-bold mb-3">
+                        <i class="bi bi-file-pdf me-2 text-danger"></i> Curriculum Vitae
+                    </h4>
+
+                    <div class="mb-4">
+                        <label for="cvFile" class="form-label fw-bold text-dark-navy">Upload CV (PDF)</label>
+                        <input type="file" class="form-control rounded-3" id="cvFile" name="cvFile"
+                               accept=".pdf" onchange="handleFileSelect(event)">
+                        <small class="text-muted d-block mt-2">
+                            <i class="bi bi-info-circle me-1"></i> Max file size: 10MB. Supported format: PDF
+                        </small>
+                    </div>
+
+                    <!-- Current CV display -->
+                    <div th:if="${profile.cvFilePath}" class="alert alert-info rounded-3 mb-4" id="currentCvAlert">
+                        <i class="bi bi-file-earmark-pdf me-2"></i>
+                        <strong>Current CV:</strong>
+                        <div class="mt-2 d-flex gap-2">
+                            <a th:href="@{${profile.cvFilePath}}" target="_blank" class="btn btn-sm btn-info rounded-pill px-3 py-1 fw-bold">
+                                <i class="bi bi-eye me-1"></i> View
+                            </a>
+                            <a th:href="@{${profile.cvFilePath}}" download class="btn btn-sm btn-secondary rounded-pill px-3 py-1 fw-bold">
+                                <i class="bi bi-download me-1"></i> Download
+                            </a>
+                        </div>
+                    </div>
+
+                    <div id="fileInfo" class="alert alert-success rounded-3 mb-4" style="display: none;">
+                        <strong>Selected File:</strong> <span id="fileName"></span>
+                    </div>
+
+                    <div class="d-flex gap-3">
+                        <button type="submit" class="btn btn-teal rounded-pill px-5 py-2 fw-bold shadow-sm">
+                            <i class="bi bi-check-circle me-2"></i> Save Changes
+                        </button>
+                        <a th:href="@{/dashboard}" class="btn btn-glass-outline rounded-pill px-5 py-2 fw-bold">
+                            <i class="bi bi-x-circle me-2"></i> Cancel
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Employer Profile -->
+    <div th:if="${role == 'EMPLOYER'}" class="row">
+        <div class="col-lg-8 mx-auto">
+            <form th:action="@{/profile/employer/update}" method="post">
+                <div class="glass-section-card p-5 mb-4">
+                    <h3 class="text-dark-navy fw-bold mb-4">
+                        <i class="bi bi-building me-2 text-teal"></i> Company Information
+                    </h3>
+
+                    <div class="mb-3">
+                        <label for="username" class="form-label fw-bold text-dark-navy">Username</label>
+                        <input type="text" class="form-control rounded-3" id="username" name="username"
+                               th:value="${profile.username}" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="email" class="form-label fw-bold text-dark-navy">Email</label>
+                        <input type="email" class="form-control rounded-3" id="email" name="email"
+                               th:value="${profile.email}" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="companyName" class="form-label fw-bold text-dark-navy">Company Name</label>
+                        <input type="text" class="form-control rounded-3" id="companyName" name="companyName"
+                               th:value="${profile.companyName}" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label fw-bold text-dark-navy">Company Description</label>
+                        <textarea class="form-control rounded-3" id="description" name="description"
+                                  rows="6" placeholder="Tell us about your company, culture, values, etc.">[[${profile.description}]]</textarea>
+                        <small class="text-muted d-block mt-2">
+                            <i class="bi bi-info-circle me-1"></i> Provide details that will help candidates learn more about your company
+                        </small>
+                    </div>
+
+                    <div class="d-flex gap-3">
+                        <button type="submit" class="btn btn-teal rounded-pill px-5 py-2 fw-bold shadow-sm">
+                            <i class="bi bi-check-circle me-2"></i> Save Changes
+                        </button>
+                        <a th:href="@{/dashboard}" class="btn btn-glass-outline rounded-pill px-5 py-2 fw-bold">
+                            <i class="bi bi-x-circle me-2"></i> Cancel
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>
+
+<footer th:replace="~{fragments/footer :: subsol}"></footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    function handleFileSelect(event) {
+        const file = event.target.files[0];
+        if (file) {
+            if (file.type !== 'application/pdf') {
+                alert('Please select a PDF file');
+                event.target.value = '';
+                document.getElementById('fileInfo').style.display = 'none';
+            } else if (file.size > 10 * 1024 * 1024) {
+                alert('File size exceeds 10MB limit');
+                event.target.value = '';
+                document.getElementById('fileInfo').style.display = 'none';
+            } else {
+                document.getElementById('fileName').textContent = file.name + ' (' + (file.size / 1024 / 1024).toFixed(2) + ' MB)';
+                document.getElementById('fileInfo').style.display = 'block';
+            }
+        }
+    }
+
+    // Auto-hide alerts after 5 seconds (except Current CV Alert)
+    document.querySelectorAll('.alert:not(#currentCvAlert)').forEach(alert => {
+        setTimeout(() => {
+            const bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+        }, 5000);
+    });
+</script>
+</body>
+</html>
+

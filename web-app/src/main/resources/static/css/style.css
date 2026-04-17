@@ -1,13 +1,206 @@
 /* =========================================
-    INDEX/HOME PAGE
+   GLOBAL STYLES (BACKGROUND, BUTTONS, CARDS)
    ========================================= */
 
-html { scroll-behavior: smooth; }
-.section { min-height: 50vh; padding: 40px 0; }
-.section-icon { font-size: 70px; }
+body {
+    background: linear-gradient(135deg,
+    #cae3f0 0%,   /* Light Cyan */
+    #bcebe9 25%,  /* Pastel Teal */
+    #f2eaf2 50%,  /* Faded Purple */
+    #e0f2fe 75%,  /* Light Blue */
+    #cae3f0 100%  /* Light Cyan for loop ending */
+    );
+    background-attachment: fixed;
+    background-size: 200% 200%;
+    animation: moveGradient 18s ease infinite;
+    color: #0c1f36;
+    padding-top: 100px;
+}
+
+/* --- BACKGROUND ANIMATION --- */
+@keyframes moveGradient {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+/* --- SPECIFIC COLORS --- */
+.text-dark-navy { color: #0c1f36; }
+.text-teal { color: #0e8b8c; }
+
+.text-dark-navy { color: #0f2942 !important; }
+.text-teal { color: #0e8b8c !important; }
+
+/* --- GLOBAL CUSTOM BUTTONS --- */
+.btn-teal {
+    background-color: #0e8b8c;
+    color: white;
+    border: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, all 0.3s ease;
+}
+.btn-teal:hover {
+    background-color: #0a6b6d;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(14, 139, 140, 0.3) !important;
+}
+
+.btn-light-blue {
+    background-color: #addcf1;
+    color: #0c1f36;
+    border: none;
+    transition: all 0.3s ease;
+}
+.btn-light-blue:hover {
+    background-color: #93cce6;
+    color: #0c1f36;
+    transform: translateY(-2px);
+}
+
+.btn-glass-outline {
+    background: rgba(255, 255, 255, 0.3);
+    border: 2px solid rgba(14, 139, 140, 0.7);
+    color: #0e8b8c;
+    transition: all 0.2s ease;
+}
+.btn-glass-outline:hover {
+    background: #0e8b8c;
+    color: white;
+}
+
+/* --- SECTION CONTAINERS (GLOBAL GLASSMORPHISM) --- */
+.glass-section-card {
+    background: rgba(255, 255, 255, 0.45);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    border-radius: 2rem;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.03);
+    padding: 4rem;
+    margin-bottom: 3rem;
+}
+
+.icon-glass-box {
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    border-radius: 1.5rem;
+    width: 200px;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+}
+
 
 /* =========================================
-    ABOUT PAGE
+   NAVBAR / MENU
+   ========================================= */
+
+.glass-navbar {
+    background: rgba(255, 255, 255, 0.45);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    border-radius: 50px; /* Pill shape */
+    width: 95%; /* Does not touch screen edges */
+    max-width: 1400px;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+
+/* =========================================
+   FOOTER
+   ========================================= */
+
+.glass-footer {
+    background: rgba(255, 255, 255, 0.45);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-top: 1px solid rgba(255, 255, 255, 0.6);
+    width: 100%;
+    z-index: 10;
+}
+
+
+/* =========================================
+   INDEX / HOME PAGE
+   ========================================= */
+
+.hero-section {
+    background: linear-gradient(120deg, #102a45 0%, #2b5575 35%, #cae3f0 70%, #f0ebf8 100%);
+}
+
+.glass-panel-dark {
+    background: rgba(16, 42, 69, 0.65);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 1.5rem;
+}
+
+.glass-panel-light {
+    background: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 1.5rem;
+}
+
+.glass-step {
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    width: 110px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    transition: transform 0.3s ease;
+}
+
+.glass-step:hover {
+    transform: translateY(-5px);
+}
+
+.score-circle {
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    background: conic-gradient(#4fd1c5 92%, rgba(255,255,255,0.1) 0);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+}
+
+.score-inner {
+    width: 100%;
+    height: 100%;
+    background: #112a46;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+}
+
+.skeleton-line {
+    height: 6px;
+    background: #e2e8f0;
+    border-radius: 4px;
+    margin-bottom: 8px;
+}
+
+
+/* =========================================
+   ABOUT PAGE
    ========================================= */
 
 .about-hero {
@@ -48,40 +241,112 @@ html { scroll-behavior: smooth; }
     box-shadow: 0 10px 30px rgba(13, 92, 218, 0.15);
 }
 
+.glass-feature-card {
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.glass-feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+}
+
 .about-cta {
     background: linear-gradient(135deg, #ffe8f0 0%, #f0e8ff 100%);
     padding: 80px 0;
     min-height: 50vh;
 }
 
-/* =========================================
-   NAVBAR/MENU
-   ========================================= */
-
-.navbar-nav .nav-link {
-    white-space: nowrap;
-}
-.navbar-nav .nav-item {
-    margin: 0 2px;
-}
 
 /* =========================================
-    AUTHENTICATION
+   JOBS PAGE
    ========================================= */
 
-.auth-wrapper {
-    padding-top: 100px;
-    padding-bottom: 50px;
+.job-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.job-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08) !important;
 }
 
-.auth-card {
-    max-width: 450px;
-    margin: 0 auto;
-    border-radius: 20px;
+
+/* =========================================
+   APPLICATIONS PAGE
+   ========================================= */
+
+/* Hover effect for application cards */
+.app-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.app-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08) !important;
 }
 
-.form-floating:focus-within label {
-    color: #0d5cda;
-    font-weight: bold;
+
+/* =========================================
+   USERS PAGE
+   ========================================= */
+
+/* Hover effect for user cards */
+.user-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.user-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08) !important;
 }
 
+
+/* =========================================
+   JOB APPLICANTS PAGE
+   ========================================= */
+
+/* Hover effect for candidate cards */
+.applicant-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.applicant-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* --- SCORE WHEEL--- */
+.score-wheel-container {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(255, 255, 255, 0.4);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    position: relative;
+}
+
+.score-inner-circle {
+    width: 60px;
+    height: 60px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(5px);
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+    box-shadow: inset 0 2px 5px rgba(0,0,0,0.02);
+}
+
+.score-badge-simple {
+    background: rgba(255, 255, 255, 0.5);
+    padding: 0.5rem 1.2rem 0.5rem 0.5rem;
+    border-radius: 50px;
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+}

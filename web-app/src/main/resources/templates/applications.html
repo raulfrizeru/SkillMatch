@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkillMatch - My Applications</title>
+    <head th:replace="~{fragments/navbar :: bootstrap-css}"></head>
+</head>
+<body class="d-flex flex-column min-vh-100">
+<div th:replace="~{fragments/navbar :: menu}"></div>
+
+<div class="container flex-grow-1 pt-5 mt-5 mb-5">
+
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-5">
+        <div class="mb-3 mb-md-0">
+            <h1 class="fw-bolder text-dark-navy mb-1">My Applications</h1>
+            <p class="text-dark opacity-75 mb-0 fs-5">Track the status of your job applications.</p>
+        </div>
+        <a th:href="@{/jobs}" class="btn btn-teal shadow-sm rounded-pill px-4 py-2 fw-bold d-inline-flex align-items-center">
+            <i class="bi bi-search me-2"></i> Browse More Jobs
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+
+            <div th:each="app : ${applications}" class="glass-section-card app-card p-4 mb-4 d-flex flex-column flex-md-row align-items-md-center justify-content-between">
+
+                <div class="d-flex align-items-center mb-4 mb-md-0">
+                    <div class="bg-white bg-opacity-75 rounded-4 d-flex align-items-center justify-content-center shadow-sm me-4" style="width: 70px; height: 70px; border: 1px solid rgba(255,255,255,0.8);">
+                        <i class="bi bi-file-earmark-person text-teal fs-2"></i>
+                    </div>
+                    <div>
+                        <h4 class="fw-bold text-dark-navy mb-1" th:text="${app.jobTitle}">Job Title</h4>
+                        <div class="d-flex flex-wrap align-items-center text-dark opacity-75 gap-3 mt-2">
+                                <span class="d-flex align-items-center fw-medium">
+                                    <i class="bi bi-building me-2 text-teal"></i>
+                                    <span th:text="${app.companyName}">Company Name</span>
+                                </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-center gap-4">
+
+                        <span class="badge rounded-pill px-3 py-2 fw-bold"
+                              th:classappend="${app.status == 'PENDING' ? 'bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25' :
+                                              (app.status == 'ACCEPTED' ? 'bg-success bg-opacity-10 text-success border border-success border-opacity-25' :
+                                              'bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25')}"
+                              th:text="${app.status}">
+                        </span>
+
+                    <div class="score-badge-simple">
+                        <div class="score-wheel-container"
+                             th:style="'background: conic-gradient(#0e8b8c ' + ${(app.finalScore ?: 0) * 100} + '%, rgba(255,255,255,0.2) 0);'">
+                            <div class="score-inner-circle">
+                                <span class="fw-bolder text-dark-navy fs-5 lh-1"
+                                      th:text="${app.finalScore != null ? #numbers.formatDecimal(app.finalScore * 100, 1, 0) + '%' : '--'}">
+                                    0%
+                                </span>
+                            </div>
+                        </div>
+                        <span class="text-secondary fw-bold text-uppercase tracking-wide" style="font-size: 0.75rem;">Match Score</span>
+                    </div>
+
+                </div>
+            </div>
+
+            <div th:if="${#lists.isEmpty(applications)}" class="glass-section-card p-5 text-center mt-4">
+                <div class="bg-white bg-opacity-50 rounded-circle d-inline-flex align-items-center justify-content-center mb-4 shadow-sm" style="width: 100px; height: 100px; border: 1px solid rgba(255,255,255,0.8);">
+                    <i class="bi bi-folder2-open text-teal" style="font-size: 40px; opacity: 0.8;"></i>
+                </div>
+                <h3 class="fw-bolder text-dark-navy mb-2">No applications found</h3>
+                <p class="text-dark opacity-75 mb-4 fs-5">You haven't applied to any jobs yet. Start exploring!</p>
+                <a th:href="@{/jobs}" class="btn btn-teal rounded-pill px-4 py-2 fw-bold shadow-sm">
+                    Find Jobs <i class="bi bi-arrow-right ms-2"></i>
+                </a>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<footer th:replace="~{fragments/footer :: subsol}"></footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -2,6 +2,11 @@ package com.licenta.skillmatch.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import org.hibernate.annotations.CreationTimestamp;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Data
@@ -23,8 +28,16 @@ public class JobPost {
     @Column(nullable = false)
     private boolean isActive;
 
-    @ManyToOne
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdDate;
+
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "employer_id", nullable = false)
     private Employer employer;
+
+    @OneToMany(mappedBy = "jobPost", cascade = CascadeType.ALL)
+    private List<JobApplication> applications = new ArrayList<>();
+
 
 }

@@ -3,12 +3,16 @@ package com.licenta.skillmatch.service;
 import com.licenta.skillmatch.dto.RegisterDto;
 import com.licenta.skillmatch.dto.UserEditDto;
 import com.licenta.skillmatch.dto.UserListDto;
+import com.licenta.skillmatch.dto.CandidateProfileDto;
+import com.licenta.skillmatch.dto.EmployerProfileDto;
 import com.licenta.skillmatch.entity.Candidate;
 import com.licenta.skillmatch.entity.Employer;
 import com.licenta.skillmatch.entity.User;
 import com.licenta.skillmatch.entity.UserGroup;
 import com.licenta.skillmatch.repository.UserGroupRepository;
 import com.licenta.skillmatch.repository.UserRepository;
+import com.licenta.skillmatch.repository.CandidateRepository;
+import com.licenta.skillmatch.repository.EmployerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -23,6 +27,12 @@ public class UserService {
 
     @Autowired
     private UserGroupRepository userGroupRepository;
+
+    @Autowired
+    private CandidateRepository candidateRepository;
+
+    @Autowired
+    private EmployerRepository employerRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -106,4 +116,67 @@ public class UserService {
         userRepository.save(user);
     }
 
+    public User findByUsername(String username) {
+        return userRepository.findByUsername(username);
+    }
+
+    // Profile methods for Candidate
+    public CandidateProfileDto getCandidateProfile(Long candidateId) {
+        Candidate candidate = candidateRepository.findById(candidateId)
+                .orElseThrow(() -> new IllegalArgumentException("Candidate not found with id: " + candidateId));
+
+        return CandidateProfileDto.builder()
+                .id(candidate.getId())
+                .username(candidate.getUsername())
+                .email(candidate.getEmail())
+                .firstName(candidate.getFirstName())
+                .lastName(candidate.getLastName())
+                .cvFilePath(candidate.getCvFilePath())
+                .build();
+    }
+
+    public void updateCandidateProfile(Long candidateId, CandidateProfileDto dto) {
+        Candidate candidate = candidateRepository.findById(candidateId)
+                .orElseThrow(() -> new IllegalArgumentException("Candidate not found with id: " + candidateId));
+
+        candidate.setUsername(dto.getUsername());
+        candidate.setEmail(dto.getEmail());
+        candidate.setFirstName(dto.getFirstName());
+        candidate.setLastName(dto.getLastName());
+
+        candidateRepository.save(candidate);
+    }
+
+    public void updateCandidateCvPath(Long candidateId, String cvFilePath) {
+        Candidate candidate = candidateRepository.findById(candidateId)
+                .orElseThrow(() -> new IllegalArgumentException("Candidate not found with id: " + candidateId));
+
+        candidate.setCvFilePath(cvFilePath);
+        candidateRepository.save(candidate);
+    }
+
+    public EmployerProfileDto getEmployerProfile(Long employerId) {
+        Employer employer = employerRepository.findById(employerId)
+                .orElseThrow(() -> new IllegalArgumentException("Employer not found with id: " + employerId));
+
+        return EmployerProfileDto.builder()
+                .id(employer.getId())
+                .username(employer.getUsername())
+                .email(employer.getEmail())
+                .companyName(employer.getCompanyName())
+                .description(employer.getDescription())
+                .build();
+    }
+
+    public void updateEmployerProfile(Long employerId, EmployerProfileDto dto) {
+        Employer employer = employerRepository.findById(employerId)
+                .orElseThrow(() -> new IllegalArgumentException("Employer not found with id: " + employerId));
+
+        employer.setUsername(dto.getUsername());
+        employer.setEmail(dto.getEmail());
+        employer.setCompanyName(dto.getCompanyName());
+        employer.setDescription(dto.getDescription());
+
+        employerRepository.save(employer);
+    }
 }
