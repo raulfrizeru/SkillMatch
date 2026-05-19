@@ -44,12 +44,41 @@
                     </div>
                     <div class="col-md-6">
                         <label class="text-muted small fw-bold">Status</label>
-                        <p>
-                            <span class="badge rounded-pill px-3 py-2 fw-bold"
-                                  th:classappend="${job.isActive ? 'bg-success bg-opacity-10 text-success border border-success border-opacity-25' : 'bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25'}"
-                                  th:text="${job.isActive ? 'Open' : 'Closed'}">
-                            </span>
-                        </p>
+                        <div class="d-flex align-items-center justify-content-between gap-3">
+                            <div class="d-flex align-items-center gap-2 flex-wrap">
+                                <!-- Application status badge -->
+                                <span th:if="${role == 'CANDIDATE' && hasApplied}" class="badge rounded-pill px-3 py-2 fw-bold bg-info bg-opacity-10 text-info border border-info border-opacity-25">
+                                    <i class="bi bi-check me-1"></i> Applied
+                                </span>
+                                <!-- Job status badge -->
+                                <span class="badge rounded-pill px-3 py-2 fw-bold"
+                                      th:classappend="${job.isActive ? 'bg-success bg-opacity-10 text-success border border-success border-opacity-25' : 'bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25'}"
+                                      th:text="${job.isActive ? 'Open' : 'Closed'}">
+                                </span>
+                            </div>
+                            <!-- Score wheel from either CandidateJobScore or JobApplication -->
+                            <div th:if="${role == 'CANDIDATE' && (candidateJobScore != null || jobApplicationScore != null)}" class="d-flex align-items-center gap-2">
+                                <div class="position-relative" style="width: 60px; height: 60px;">
+                                    <svg class="position-absolute" style="width: 100%; height: 100%;">
+                                        <circle cx="30" cy="30" r="28" fill="none" stroke="#e9ecef" stroke-width="4" />
+                                        <circle cx="30" cy="30" r="28" fill="none" stroke="#20c997" stroke-width="4"
+                                                stroke-dasharray="175.929"
+                                                stroke-dashoffset="0"
+                                                th:stroke-dashoffset="${176 - ((candidateJobScore != null ? candidateJobScore.finalScore : jobApplicationScore.finalScore) * 176)}"
+                                                transform="rotate(-90 30 30)"
+                                                style="transition: stroke-dashoffset 0.3s ease;" />
+                                    </svg>
+                                    <div class="position-absolute top-50 start-50 translate-middle text-center">
+                                        <small class="d-block fw-bold text-dark"
+                                               th:text="${#numbers.formatDecimal((candidateJobScore != null ? candidateJobScore.finalScore : jobApplicationScore.finalScore) * 100, 0, 0)}">0</small>
+                                        <small class="text-muted d-block" style="font-size: 0.65rem;">%</small>
+                                    </div>
+                                </div>
+                                <div class="ms-2">
+                                    <small class="text-muted d-block">Match Score</small>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -94,12 +123,20 @@
 
                     <!-- For Candidate -->
                     <div th:if="${role == 'CANDIDATE'}">
-                        <button th:if="${hasCv}" class="btn btn-teal rounded-pill px-5 py-2 fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#applyModal">
-                            <i class="bi bi-send me-2"></i> Apply Now
-                        </button>
-                        <button th:if="${!hasCv}" class="btn btn-secondary rounded-pill px-5 py-2 fw-bold" disabled title="Please upload your CV before applying">
-                            <i class="bi bi-send me-2"></i> Apply Now
-                        </button>
+                        <div class="d-flex gap-2">
+                            <button th:if="${hasCv}" class="btn btn-teal rounded-pill px-5 py-2 fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#applyModal">
+                                <i class="bi bi-send me-2"></i> Apply Now
+                            </button>
+                            <button th:if="${!hasCv}" class="btn btn-secondary rounded-pill px-5 py-2 fw-bold" disabled title="Please upload your CV before applying">
+                                <i class="bi bi-send me-2"></i> Apply Now
+                            </button>
+
+                            <form th:action="@{/jobs/{jobId}/calculate-match-score(jobId=${job.id})}" method="GET" class="d-inline">
+                                <button type="submit" class="btn btn-outline-teal rounded-pill px-5 py-2 fw-bold">
+                                    <i class="bi bi-calculator me-2"></i> Calculate Match Score
+                                </button>
+                            </form>
+                        </div>
                     </div>
 
                     <a th:if="${role == 'EMPLOYER'}" th:href="@{/jobs/edit/{id}(id=${job.id})}" class="btn btn-sm btn-glass-outline rounded-pill px-3 py-1 fw-bold me-2">

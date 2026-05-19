@@ -12,16 +12,23 @@
 
 <div class="container flex-grow-1 pt-5 mt-5 mb-5">
 
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-5">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-5 gap-2">
         <div class="mb-3 mb-md-0">
             <h1 class="fw-bolder text-dark-navy mb-1">Applicants</h1>
             <p class="text-dark opacity-75 mb-0 fs-5">
                 Reviewing candidates for: <span class="fw-bold text-teal" th:text="${job.title}">Job Title</span>
             </p>
         </div>
-        <a th:href="@{/jobs/{id}(id=${job.id})}" class="btn btn-glass-outline shadow-sm rounded-pill px-4 py-2 fw-bold d-inline-flex align-items-center">
-            <i class="bi bi-arrow-left me-2"></i> Back to Job Details
-        </a>
+        <div class="d-flex gap-2">
+            <form th:action="@{/jobs/{jobId}/applicants/calculate-all-scores(jobId=${jobId})}" method="GET" class="d-inline">
+                <button type="submit" class="btn btn-outline-teal shadow-sm rounded-pill px-4 py-2 fw-bold d-inline-flex align-items-center">
+                    <i class="bi bi-calculator me-2"></i> Calculate Score to all
+                </button>
+            </form>
+            <a th:href="@{/jobs/{id}(id=${job.id})}" class="btn btn-glass-outline shadow-sm rounded-pill px-4 py-2 fw-bold d-inline-flex align-items-center">
+                <i class="bi bi-arrow-left me-2"></i> Back to Job Details
+            </a>
+        </div>
     </div>
 
     <div class="row">
@@ -70,9 +77,16 @@
                         <span class="text-secondary fw-bold text-uppercase tracking-wide" style="font-size: 0.75rem;">Match Score</span>
                     </div>
 
-                    <a th:href="@{/applications/{id}(id=${app.id})}" class="btn btn-teal rounded-pill px-4 py-2 fw-bold shadow-sm">
-                        View Details <i class="bi bi-chevron-right ms-1" style="font-size: 0.8rem;"></i>
-                    </a>
+                    <div class="d-flex gap-2">
+                        <a th:href="@{/{path}(path=${app.candidateCvPath})}" target="_blank" class="btn btn-info rounded-pill px-4 py-2 fw-bold shadow-sm">
+                            <i class="bi bi-file-pdf me-1"></i> View CV
+                        </a>
+                        <form th:action="@{/jobs/{jobId}/applicants/{applicationId}/calculate-score(jobId=${jobId},applicationId=${app.id})}" method="GET" class="d-inline">
+                            <button type="submit" class="btn btn-outline-teal rounded-pill px-4 py-2 fw-bold">
+                                <i class="bi bi-calculator me-1"></i> Calculate Score
+                            </button>
+                        </form>
+                    </div>
 
                 </div>
             </div>

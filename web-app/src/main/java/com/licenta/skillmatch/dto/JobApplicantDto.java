@@ -18,5 +18,6 @@ public class JobApplicantDto {
     private String status;
     private Double finalScore;
     private LocalDateTime applyDate;
+    private String candidateCvPath;
 }
 

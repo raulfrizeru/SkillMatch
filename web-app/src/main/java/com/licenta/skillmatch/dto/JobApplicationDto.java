@@ -26,4 +26,7 @@ public class JobApplicationDto {
     private Double softSkillsScore;
     private Double interviewScore;
     private Long jobPostId;
+    private String candidateName;
+    private String candidateEmail;
+    private String candidateCvPath;
 }

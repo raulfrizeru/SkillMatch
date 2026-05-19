@@ -19,6 +19,11 @@ public class Candidate extends User {
 
     @Column(columnDefinition = "TEXT")
     private String extractedCvJson;
+    @Column(columnDefinition = "TEXT")
+    private String extractedCvOcr;
+
+    @OneToMany(mappedBy = "candidate", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PastInterview> pastInterviews = new ArrayList<>();
 
     @JsonIgnore
     @OneToMany(mappedBy = "candidate", cascade = CascadeType.ALL)

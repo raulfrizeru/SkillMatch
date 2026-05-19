@@ -1,3 +1,4 @@
+
 from sentence_transformers import SentenceTransformer, util
 import numpy as np
 
@@ -13,10 +14,11 @@ def generate_dense_text_from_json(data_json: dict) -> str:
         for item in data_json['experience']:
             skill = item.get('skill', '')
             domain = item.get('domain', '')
-            if skill:
+            years = item.get('years', 0)
+            if skill and years>0:
                 text_parts.append(f"{skill} in {domain}")
     if 'soft_skills' in data_json:
-        text_parts.extend(data_json['soft_skills'])
+        text_parts.append("Soft skills: " + ", ".join(data_json['soft_skills']))
 
     return ". ".join(text_parts)
 
@@ -34,7 +36,7 @@ def calculate_semantic_score(cv_json: dict, job_json: dict) -> float:
 
     return float(max(0.0, min(1.0, cos_sim)))
 
-def calculate_skill_score(cv_json: dict, job_json: dict, threshold: float = 0.3, similar_weight: float = 0.8) -> float:
+def calculate_skill_score(cv_json: dict, job_json: dict, threshold: float = 0.3, similar_weight: float = 0.9) -> float:
     cv_skills = list(set([item['skill'].lower().strip() for item in cv_json.get('experience', [])]))
     job_skills = list(set([item['skill'].lower().strip() for item in job_json.get('experience', [])]))
     total_required = len(job_skills)
@@ -93,10 +95,15 @@ def calculate_domain_score(cv_json: dict, job_json: dict) -> float:
     cv_profile_vec = get_weighted_domain_vector(cv_json)
     job_profile_vec = get_weighted_domain_vector(job_json)
 
-    if cv_profile_vec is None or job_profile_vec is None:
+    if cv_profile_vec is None:
         return 0.0
+    elif job_profile_vec is None:
+        return 1.0
 
-    similarity = util.cos_sim([cv_profile_vec], [job_profile_vec]).item()
+    vCv = np.asarray(cv_profile_vec, dtype=np.float32).reshape(1, -1)
+    vJob = np.asarray(job_profile_vec, dtype=np.float32).reshape(1, -1)
+
+    similarity = util.cos_sim(vCv, vJob).item()
     return float(max(0.0, min(1.0, similarity)))
 
 def get_max_years_per_domain(data_json):
@@ -116,6 +123,8 @@ def calculate_experience_score(cv_json: dict, job_json: dict, threshold: float =
 
     if not job_domains_map:
         return 1.0
+    if not cv_domains_map:
+        return 0.0
 
     total_weighted_score = 0.0
     total_weight = 0.0
@@ -190,7 +199,6 @@ def calculate_interview_score(interviews_list: list, job_json: dict, target_comp
 
     current_job_domains = list(set([item.get('domain', '').lower() for item in job_json.get('experience', []) if item.get('domain')]))
     if not current_job_domains:
-        print("No job domains found for interview score calculation.")
         return 0.0
     job_domain_embs = model.encode(current_job_domains, convert_to_tensor=True)
     best_weighted_score = 0.0
@@ -204,7 +212,7 @@ def calculate_interview_score(interviews_list: list, job_json: dict, target_comp
         title_emb = model.encode(interview_title, convert_to_tensor=True)
         cosine_scores = util.cos_sim(title_emb, job_domain_embs)[0]
         max_sim = float(np.max(cosine_scores.cpu().numpy()))
-        is_same_domain = max_sim >= 0.8
+        is_same_domain = max_sim >= 0.7
         is_same_company = interview_company == target_company
 
         relevance_factor = 0.0
@@ -225,10 +233,10 @@ def calculate_interview_score(interviews_list: list, job_json: dict, target_comp
     return float(best_weighted_score)
 
 def calculate_final_score(semantic_score: float, skills_score: float,  domain_score: float, experience_score: float, soft_skills_score: float, interview_score: float) -> dict:
-    W_SKILLS = 0.35
-    W_SEMANTIC = 0.25
-    W_DOMAIN = 0.10
-    W_EXPERIENCE = 0.20
+    W_SKILLS = 0.25
+    W_SEMANTIC = 0.15
+    W_DOMAIN = 0.15
+    W_EXPERIENCE = 0.35
     W_SOFT = 0.05
     W_INTERVIEW = 0.05
 

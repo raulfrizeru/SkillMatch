@@ -4,10 +4,12 @@ import com.licenta.skillmatch.dto.JobApplicationDto;
 import com.licenta.skillmatch.dto.JobApplicantDto;
 import com.licenta.skillmatch.entity.JobApplication;
 import com.licenta.skillmatch.entity.Candidate;
+import com.licenta.skillmatch.entity.CandidateJobScore;
 import com.licenta.skillmatch.entity.JobPost;
 import com.licenta.skillmatch.repository.JobApplicationRepository;
 import com.licenta.skillmatch.repository.CandidateRepository;
 import com.licenta.skillmatch.repository.JobPostRepository;
+import com.licenta.skillmatch.repository.CandidateJobScoreRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -27,6 +29,9 @@ public class JobApplicationService {
 
     @Autowired
     private JobPostRepository jobPostRepository;
+
+    @Autowired
+    private CandidateJobScoreRepository candidateJobScoreRepository;
 
     public List<JobApplicationDto> getApplicationsByCandidate(Long candidateId) {
         return jobApplicationRepository.findByCandidateId(candidateId).stream()
@@ -55,6 +60,9 @@ public class JobApplicationService {
                 .softSkillsScore(jobApplication.getSoftSkillsScore())
                 .interviewScore(jobApplication.getInterviewScore())
                 .jobPostId(jobApplication.getJobPost().getId())
+                .candidateName(jobApplication.getCandidate().getFirstName() + " " + jobApplication.getCandidate().getLastName())
+                .candidateEmail(jobApplication.getCandidate().getEmail())
+                .candidateCvPath(jobApplication.getCandidate().getCvFilePath())
                 .build();
     }
 
@@ -62,10 +70,46 @@ public class JobApplicationService {
         Optional<Candidate> candidateOpt = candidateRepository.findById(candidateId);
         Optional<JobPost> jobPostOpt = jobPostRepository.findById(jobPostId);
         if (candidateOpt.isPresent() && jobPostOpt.isPresent()) {
+            Candidate candidate = candidateOpt.get();
+            JobPost jobPost = jobPostOpt.get();
             JobApplication jobApplication = new JobApplication();
-            jobApplication.setCandidate(candidateOpt.get());
-            jobApplication.setJobPost(jobPostOpt.get());
+            jobApplication.setCandidate(candidate);
+            jobApplication.setJobPost(jobPost);
             jobApplication.setApplyDate(LocalDateTime.now());
+
+            // Caută CandidateJobScore dacă există
+            Optional<CandidateJobScore> scoreOpt = candidateJobScoreRepository
+                    .findByCandidateIdAndJobPostId(candidateId, jobPostId);
+
+            if (scoreOpt.isPresent()) {
+                CandidateJobScore score = scoreOpt.get();
+                // Preluează scorurile
+                jobApplication.setSemanticScore(score.getSemanticScore());
+                jobApplication.setSkillsScore(score.getSkillScore());
+                jobApplication.setDomainScore(score.getDomainScore());
+                jobApplication.setExperienceScore(score.getExperienceScore());
+                jobApplication.setSoftSkillsScore(score.getSoftSkillsScore());
+                jobApplication.setInterviewScore(score.getInterviewScore());
+                jobApplication.setFinalScore(score.getFinalScore());
+
+                // Preluează datele extrase
+                if (score.getExtractedCvJson() != null) {
+                    candidate.setExtractedCvJson(score.getExtractedCvJson());
+                }
+                if (score.getCvOcrText() != null) {
+                    candidate.setExtractedCvOcr(score.getCvOcrText());
+                }
+                if (score.getExtractedJobJson() != null) {
+                    jobPost.setExtractedJobJson(score.getExtractedJobJson());
+                }
+
+                candidateRepository.save(candidate);
+                jobPostRepository.save(jobPost);
+
+                // Șterge CandidateJobScore după preluare
+                candidateJobScoreRepository.delete(score);
+            }
+
             jobApplicationRepository.save(jobApplication);
         } else {
             throw new IllegalArgumentException("Candidate or Job Post not found");
@@ -73,7 +117,24 @@ public class JobApplicationService {
     }
 
     public List<JobApplicantDto> getApplicantsByJobId(Long jobPostId) {
-        return jobApplicationRepository.findByJobPostId(jobPostId).stream()
+        List<JobApplication> allApplications = jobApplicationRepository.findByJobPostId(jobPostId);
+
+        // Separă aplicanții cu scor de cei fără scor
+        List<JobApplication> withScore = allApplications.stream()
+                .filter(app -> app.getFinalScore() != null)
+                .sorted((app1, app2) -> app2.getFinalScore().compareTo(app1.getFinalScore()))
+                .collect(Collectors.toList());
+
+        List<JobApplication> withoutScore = allApplications.stream()
+                .filter(app -> app.getFinalScore() == null)
+                .sorted((app1, app2) -> app1.getApplyDate().compareTo(app2.getApplyDate()))
+                .collect(Collectors.toList());
+
+        // Combină lista: mai întâi cei cu scor, apoi cei fără scor
+        List<JobApplication> sorted = new java.util.ArrayList<>(withScore);
+        sorted.addAll(withoutScore);
+
+        return sorted.stream()
                 .map(this::convertToJobApplicantDto)
                 .collect(Collectors.toList());
     }
@@ -87,6 +148,7 @@ public class JobApplicationService {
                 .status(jobApplication.getStatus())
                 .finalScore(jobApplication.getFinalScore())
                 .applyDate(jobApplication.getApplyDate())
+                .candidateCvPath(candidate.getCvFilePath())
                 .build();
     }
 }

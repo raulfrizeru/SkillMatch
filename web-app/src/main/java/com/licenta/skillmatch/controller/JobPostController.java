@@ -8,9 +8,13 @@ import com.licenta.skillmatch.entity.Employer;
 import com.licenta.skillmatch.entity.JobPost;
 import com.licenta.skillmatch.entity.Candidate;
 import com.licenta.skillmatch.entity.User;
+import com.licenta.skillmatch.entity.CandidateJobScore;
+import com.licenta.skillmatch.entity.JobApplication;
 import com.licenta.skillmatch.service.JobPostService;
 import com.licenta.skillmatch.service.JobApplicationService;
 import com.licenta.skillmatch.repository.UserRepository;
+import com.licenta.skillmatch.repository.CandidateJobScoreRepository;
+import com.licenta.skillmatch.repository.JobApplicationRepository;
 import com.licenta.skillmatch.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -32,6 +36,12 @@ public class JobPostController {
 
     @Autowired
     private JobApplicationService jobApplicationService;
+
+    @Autowired
+    private CandidateJobScoreRepository candidateJobScoreRepository;
+
+    @Autowired
+    private JobApplicationRepository jobApplicationRepository;
 
     @Autowired
     private UserService userService;
@@ -71,7 +81,10 @@ public class JobPostController {
     }
 
     @GetMapping("/jobs/{id}")
-    public String showJobPostDetails(@PathVariable Long id, Model model) {
+    public String showJobPostDetails(@PathVariable Long id,
+                                     @RequestParam(required = false) String success,
+                                     @RequestParam(required = false) String error,
+                                     Model model) {
         Optional<JobPost> jobPost = jobPostService.findJobPostByIdOptional(id);
         if (jobPost.isPresent()) {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -94,6 +107,13 @@ public class JobPostController {
                     .build();
             model.addAttribute("job", jobPostDto);
 
+            if (success != null) {
+                model.addAttribute("successMessage", success);
+            }
+            if (error != null) {
+                model.addAttribute("errorMessage", error);
+            }
+
             if (role.equals("ROLE_CANDIDATE")) {
                 model.addAttribute("role", "CANDIDATE");
 
@@ -103,6 +123,24 @@ public class JobPostController {
                     Candidate candidate = (Candidate) user;
                     boolean hasCv = candidate.getCvFilePath() != null && !candidate.getCvFilePath().isEmpty();
                     model.addAttribute("hasCv", hasCv);
+
+                    // Check if CandidateJobScore exists
+                    Optional<CandidateJobScore> candidateJobScore = candidateJobScoreRepository
+                            .findByCandidateIdAndJobPostId(candidate.getId(), id);
+                    if (candidateJobScore.isPresent()) {
+                        model.addAttribute("candidateJobScore", candidateJobScore.get());
+                    }
+
+                    // Check if JobApplication exists (with scores if tested from applications page)
+                    JobApplication jobApplication = jobApplicationRepository
+                            .findByCandidateIdAndJobPostId(candidate.getId(), id);
+                    if (jobApplication != null && jobApplication.getFinalScore() != null) {
+                        model.addAttribute("jobApplicationScore", jobApplication);
+                    }
+
+                    // Check if candidate has already applied
+                    boolean hasApplied = jobApplicationService.hasAlreadyApplied(candidate.getId(), id);
+                    model.addAttribute("hasApplied", hasApplied);
                 }
             } else if (role.equals("ROLE_EMPLOYER")) {
                 model.addAttribute("role", "EMPLOYER");
@@ -240,6 +278,7 @@ public class JobPostController {
             var applicants = jobApplicationService.getApplicantsByJobId(id);
 
             model.addAttribute("job", jobPostDto);
+            model.addAttribute("jobId", id);
             model.addAttribute("applicants", applicants);
             return "job-applicants";
         }

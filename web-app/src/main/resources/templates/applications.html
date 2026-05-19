@@ -63,6 +63,12 @@
                         <span class="text-secondary fw-bold text-uppercase tracking-wide" style="font-size: 0.75rem;">Match Score</span>
                     </div>
 
+                    <form th:action="@{/applications/score-application/{jobId}(jobId=${app.jobPostId})}" method="GET" class="d-inline">
+                        <button type="submit" class="btn btn-sm btn-outline-teal rounded-pill px-3 py-2 fw-bold">
+                            <i class="bi bi-calculator me-2"></i> Calculate Score
+                        </button>
+                    </form>
+
                 </div>
             </div>
 
