@@ -37,6 +37,37 @@ public class UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    public CandidateProfileDto getCandidateProfileByUsername(String username) {
+        User user = userRepository.findByUsername(username);
+        if (user instanceof Candidate) {
+            Candidate c = (Candidate) user;
+            return CandidateProfileDto.builder()
+                    .id(c.getId())
+                    .username(c.getUsername())
+                    .email(c.getEmail())
+                    .firstName(c.getFirstName())
+                    .lastName(c.getLastName())
+                    .cvFilePath(c.getCvFilePath())
+                    .build();
+        }
+        return null;
+    }
+
+    public EmployerProfileDto getEmployerProfileByUsername(String username) {
+        User user = userRepository.findByUsername(username);
+        if (user instanceof Employer) {
+            Employer e = (Employer) user;
+            return EmployerProfileDto.builder()
+                    .id(e.getId())
+                    .username(e.getUsername())
+                    .email(e.getEmail())
+                    .companyName(e.getCompanyName())
+                    .description(e.getDescription())
+                    .build();
+        }
+        return null;
+    }
+
     public List<UserListDto> findAllUsers(){
         List<User> users = userRepository.findAll();
         return users.stream().map(user -> {

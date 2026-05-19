@@ -103,6 +103,10 @@ public class JobPostService {
         return jobPostRepository.findById(id);
     }
 
+    public Optional<JobPostDto> findJobPostDtoById(Long id) {
+        return jobPostRepository.findById(id).map(this::convertToDto);
+    }
+
     public List<JobPostDto> findJobPostsByEmployerId(Long employerId) {
         return jobPostRepository.findAll().stream()
                 .filter(jobPost -> Objects.equals(jobPost.getEmployer().getId(), employerId))
@@ -160,11 +164,14 @@ public class JobPostService {
                 .build();
     }
 
-    public Long createNewJob(JobEditDto jobEditDto, Employer employer) {
+    public Long createNewJob(JobEditDto jobEditDto, Long employerId) {
         JobPost jobPost = new JobPost();
         jobPost.setTitle(jobEditDto.getTitle());
         jobPost.setDescription(jobEditDto.getDescription());
         jobPost.setActive(jobEditDto.getIsActive() != null ? jobEditDto.getIsActive() : true);
+
+        Employer employer = new Employer();
+        employer.setId(employerId);
         jobPost.setEmployer(employer);
 
         JobPost savedJob = jobPostRepository.save(jobPost);

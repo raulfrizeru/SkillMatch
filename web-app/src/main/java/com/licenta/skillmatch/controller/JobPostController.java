@@ -1,9 +1,6 @@
 package com.licenta.skillmatch.controller;
 
-import com.licenta.skillmatch.dto.JobEditDto;
-import com.licenta.skillmatch.dto.JobPostDto;
-import com.licenta.skillmatch.dto.RegisterDto;
-import com.licenta.skillmatch.dto.UserEditDto;
+import com.licenta.skillmatch.dto.*;
 import com.licenta.skillmatch.entity.Employer;
 import com.licenta.skillmatch.entity.JobPost;
 import com.licenta.skillmatch.entity.Candidate;
@@ -66,9 +63,11 @@ public class JobPostController {
             model.addAttribute("sortBy", sortBy);
             return "jobs";
         } else if (role.equals("ROLE_EMPLOYER")) {
-            User user = userService.findByUsername(username);
-            List<JobPostDto> jobs = jobPostService.findJobPostsByEmployerIdFiltered(user.getId(), search, sortBy, status);
-            model.addAttribute("jobs", jobs);
+            EmployerProfileDto employer = userService.getEmployerProfileByUsername(username);
+            if (employer != null) {
+                List<JobPostDto> jobs = jobPostService.findJobPostsByEmployerIdFiltered(employer.getId(), search, sortBy, status);
+                model.addAttribute("jobs", jobs);
+            }
             model.addAttribute("role", "EMPLOYER");
             model.addAttribute("search", search);
             model.addAttribute("sortBy", sortBy);
@@ -85,26 +84,16 @@ public class JobPostController {
                                      @RequestParam(required = false) String success,
                                      @RequestParam(required = false) String error,
                                      Model model) {
-        Optional<JobPost> jobPost = jobPostService.findJobPostByIdOptional(id);
-        if (jobPost.isPresent()) {
+        Optional<JobPostDto> jobPostOpt = jobPostService.findJobPostDtoById(id);
+        if (jobPostOpt.isPresent()) {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             String role = authentication.getAuthorities().stream()
                     .map(auth -> auth.getAuthority())
                     .findFirst()
                     .orElse("");
             String username = authentication.getName();
-            JobPost post = jobPost.get();
-            JobPostDto jobPostDto = JobPostDto.builder()
-                    .id(post.getId())
-                    .title(post.getTitle())
-                    .description(post.getDescription())
-                    .employerId(post.getEmployer().getId())
-                    .isActive(post.isActive())
-                    .companyName(post.getEmployer().getCompanyName())
-                    .employerDescription(post.getEmployer().getDescription())
-                    .createdDate(post.getCreatedDate())
-                    .applicantCount(post.getApplications() != null ? post.getApplications().size() : 0)
-                    .build();
+
+            JobPostDto jobPostDto = jobPostOpt.get();
             model.addAttribute("job", jobPostDto);
 
             if (success != null) {
@@ -117,28 +106,21 @@ public class JobPostController {
             if (role.equals("ROLE_CANDIDATE")) {
                 model.addAttribute("role", "CANDIDATE");
 
-                // Check if candidate has CV uploaded
-                User user = userService.findByUsername(username);
-                if (user instanceof Candidate) {
-                    Candidate candidate = (Candidate) user;
+                CandidateProfileDto candidate = userService.getCandidateProfileByUsername(username);
+                if (candidate != null) {
                     boolean hasCv = candidate.getCvFilePath() != null && !candidate.getCvFilePath().isEmpty();
                     model.addAttribute("hasCv", hasCv);
 
-                    // Check if CandidateJobScore exists
-                    Optional<CandidateJobScore> candidateJobScore = candidateJobScoreRepository
-                            .findByCandidateIdAndJobPostId(candidate.getId(), id);
-                    if (candidateJobScore.isPresent()) {
-                        model.addAttribute("candidateJobScore", candidateJobScore.get());
+                    CandidateJobScoreDto candidateJobScore = jobApplicationService.getCandidateJobScoreDto(candidate.getId(), id);
+                    if (candidateJobScore != null) {
+                        model.addAttribute("candidateJobScore", candidateJobScore);
                     }
 
-                    // Check if JobApplication exists (with scores if tested from applications page)
-                    JobApplication jobApplication = jobApplicationRepository
-                            .findByCandidateIdAndJobPostId(candidate.getId(), id);
+                    JobApplicationDto jobApplication = jobApplicationService.getJobApplicationDtoByCandidateAndJob(candidate.getId(), id);
                     if (jobApplication != null && jobApplication.getFinalScore() != null) {
                         model.addAttribute("jobApplicationScore", jobApplication);
                     }
 
-                    // Check if candidate has already applied
                     boolean hasApplied = jobApplicationService.hasAlreadyApplied(candidate.getId(), id);
                     model.addAttribute("hasApplied", hasApplied);
                 }
@@ -155,17 +137,13 @@ public class JobPostController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
 
-        User user = userService.findByUsername(username);
-        if (user != null && user instanceof Candidate) {
-            Candidate candidate = (Candidate) user;
-
-            // Check if candidate has CV uploaded
+        CandidateProfileDto candidate = userService.getCandidateProfileByUsername(username);
+        if (candidate != null) {
             if (candidate.getCvFilePath() == null || candidate.getCvFilePath().isEmpty()) {
                 redirectAttributes.addFlashAttribute("errorMessage", "Please upload your CV before applying to jobs!");
                 return "redirect:/jobs/" + id;
             }
 
-            // Check if candidate has already applied
             if (jobApplicationService.hasAlreadyApplied(candidate.getId(), id)) {
                 redirectAttributes.addFlashAttribute("errorMessage", "You have already applied to this job!");
                 return "redirect:/jobs/" + id;
@@ -202,11 +180,10 @@ public class JobPostController {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             String username = authentication.getName();
-            User user = userService.findByUsername(username);
+            EmployerProfileDto employer = userService.getEmployerProfileByUsername(username);
 
-            if (user != null && user instanceof com.licenta.skillmatch.entity.Employer) {
-                com.licenta.skillmatch.entity.Employer employer = (com.licenta.skillmatch.entity.Employer) user;
-                Long jobId = jobPostService.createNewJob(jobEditDto, employer);
+            if (employer != null) {
+                Long jobId = jobPostService.createNewJob(jobEditDto, employer.getId());
                 redirectAttributes.addFlashAttribute("successMessage", "Job post created successfully!");
                 return "redirect:/jobs/" + jobId;
             } else {
@@ -252,32 +229,25 @@ public class JobPostController {
 
     @GetMapping("/jobs/{id}/applicants")
     public String showJobApplicants(@PathVariable Long id, Model model) {
-        Optional<JobPost> jobPost = jobPostService.findJobPostByIdOptional(id);
-        if (jobPost.isPresent()) {
-            JobPost post = jobPost.get();
+        Optional<JobPostDto> jobPostOpt = jobPostService.findJobPostDtoById(id);
+        if (jobPostOpt.isPresent()) {
+            JobPostDto post = jobPostOpt.get();
 
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             String username = authentication.getName();
-            User user = userService.findByUsername(username);
+            EmployerProfileDto employer = userService.getEmployerProfileByUsername(username);
 
-            if (user instanceof Employer) {
-                Employer employer = (Employer) user;
-                if (!(employer.getId()==post.getEmployer().getId())) {
+            if (employer != null) {
+                if (!(employer.getId()==post.getEmployerId())) {
                     return "redirect:/jobs";
                 }
             } else {
                 return "redirect:/jobs";
             }
 
-            JobPostDto jobPostDto = JobPostDto.builder()
-                    .id(post.getId())
-                    .title(post.getTitle())
-                    .applicantCount(post.getApplications() != null ? post.getApplications().size() : 0)
-                    .build();
-
             var applicants = jobApplicationService.getApplicantsByJobId(id);
 
-            model.addAttribute("job", jobPostDto);
+            model.addAttribute("job", post);
             model.addAttribute("jobId", id);
             model.addAttribute("applicants", applicants);
             return "job-applicants";
@@ -286,4 +256,3 @@ public class JobPostController {
     }
 
 }
-

@@ -1,5 +1,6 @@
 package com.licenta.skillmatch.service;
 
+import com.licenta.skillmatch.dto.CandidateJobScoreDto;
 import com.licenta.skillmatch.dto.JobApplicationDto;
 import com.licenta.skillmatch.dto.JobApplicantDto;
 import com.licenta.skillmatch.entity.JobApplication;
@@ -37,6 +38,34 @@ public class JobApplicationService {
         return jobApplicationRepository.findByCandidateId(candidateId).stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
+    }
+
+    public JobApplicationDto getJobApplicationDtoByCandidateAndJob(Long candidateId, Long jobId) {
+        JobApplication jobApplication = jobApplicationRepository.findByCandidateIdAndJobPostId(candidateId, jobId);
+        if (jobApplication != null) {
+            return convertToDto(jobApplication);
+        }
+        return null;
+    }
+
+    public CandidateJobScoreDto getCandidateJobScoreDto(Long candidateId, Long jobId) {
+        Optional<CandidateJobScore> scoreOpt = candidateJobScoreRepository.findByCandidateIdAndJobPostId(candidateId, jobId);
+        if (scoreOpt.isPresent()) {
+            CandidateJobScore score = scoreOpt.get();
+            return com.licenta.skillmatch.dto.CandidateJobScoreDto.builder()
+                    .id(score.getId())
+                    .semanticScore(score.getSemanticScore())
+                    .skillScore(score.getSkillScore())
+                    .experienceScore(score.getExperienceScore())
+                    .domainScore(score.getDomainScore())
+                    .softSkillsScore(score.getSoftSkillsScore())
+                    .interviewScore(score.getInterviewScore())
+                    .finalScore(score.getFinalScore())
+                    .candidateId(score.getCandidate() != null ? score.getCandidate().getId() : null)
+                    .jobPostId(score.getJobPost() != null ? score.getJobPost().getId() : null)
+                    .build();
+        }
+        return null;
     }
 
     public boolean hasAlreadyApplied(Long candidateId, Long jobPostId) {
@@ -77,13 +106,12 @@ public class JobApplicationService {
             jobApplication.setJobPost(jobPost);
             jobApplication.setApplyDate(LocalDateTime.now());
 
-            // Caută CandidateJobScore dacă există
             Optional<CandidateJobScore> scoreOpt = candidateJobScoreRepository
                     .findByCandidateIdAndJobPostId(candidateId, jobPostId);
 
             if (scoreOpt.isPresent()) {
                 CandidateJobScore score = scoreOpt.get();
-                // Preluează scorurile
+
                 jobApplication.setSemanticScore(score.getSemanticScore());
                 jobApplication.setSkillsScore(score.getSkillScore());
                 jobApplication.setDomainScore(score.getDomainScore());
@@ -92,7 +120,7 @@ public class JobApplicationService {
                 jobApplication.setInterviewScore(score.getInterviewScore());
                 jobApplication.setFinalScore(score.getFinalScore());
 
-                // Preluează datele extrase
+
                 if (score.getExtractedCvJson() != null) {
                     candidate.setExtractedCvJson(score.getExtractedCvJson());
                 }
@@ -119,7 +147,7 @@ public class JobApplicationService {
     public List<JobApplicantDto> getApplicantsByJobId(Long jobPostId) {
         List<JobApplication> allApplications = jobApplicationRepository.findByJobPostId(jobPostId);
 
-        // Separă aplicanții cu scor de cei fără scor
+
         List<JobApplication> withScore = allApplications.stream()
                 .filter(app -> app.getFinalScore() != null)
                 .sorted((app1, app2) -> app2.getFinalScore().compareTo(app1.getFinalScore()))
@@ -130,7 +158,7 @@ public class JobApplicationService {
                 .sorted((app1, app2) -> app1.getApplyDate().compareTo(app2.getApplyDate()))
                 .collect(Collectors.toList());
 
-        // Combină lista: mai întâi cei cu scor, apoi cei fără scor
+
         List<JobApplication> sorted = new java.util.ArrayList<>(withScore);
         sorted.addAll(withoutScore);
 
@@ -150,5 +178,9 @@ public class JobApplicationService {
                 .applyDate(jobApplication.getApplyDate())
                 .candidateCvPath(candidate.getCvFilePath())
                 .build();
+    }
+
+    public Optional<JobApplicationDto> findDtoById(Long applicationId) {
+        return jobApplicationRepository.findById(applicationId).map(this::convertToDto);
     }
 }

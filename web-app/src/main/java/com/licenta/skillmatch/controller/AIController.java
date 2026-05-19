@@ -280,4 +280,3 @@ public class AIController {
         return "redirect:/jobs/" + jobId + "/applicants?success=" + message;
     }
 }
-
