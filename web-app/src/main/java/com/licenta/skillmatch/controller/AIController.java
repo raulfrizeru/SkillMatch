@@ -17,6 +17,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 import java.util.Map;
@@ -38,7 +39,8 @@ public class AIController {
     private ObjectMapper objectMapper;
 
     @GetMapping("/applications/score-application/{jobId}")
-    public String scoreApplication(@PathVariable Long jobId) {
+    public String scoreApplication(@PathVariable Long jobId,
+                                   @RequestParam(name = "model", defaultValue = "llama3.2:1b") String model) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || authentication.getName() == null) {
             return "redirect:/login";
@@ -56,13 +58,13 @@ public class AIController {
             return "redirect:/applications?error=Job%20not%20found";
         }
 
-        String model = "llama3.2:1b";
         aiIntegrationService.runAiScoring(candidate, jobOpt.get(), model);
         return "redirect:/applications";
     }
 
     @GetMapping("/jobs/{jobId}/calculate-match-score")
-    public String calculateMatchScore(@PathVariable Long jobId) {
+    public String calculateMatchScore(@PathVariable Long jobId,
+                                      @RequestParam(name = "model", defaultValue = "llama3.2:1b") String model) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || authentication.getName() == null) {
             return "redirect:/login";
@@ -81,12 +83,9 @@ public class AIController {
         }
         JobPost job = jobOpt.get();
 
-        String model = "llama3.2:1b";
-
         try {
             String jsonResponse = aiIntegrationService.runAiScoring(candidate, job, model);
 
-            // Parse response from Python - response contains: scores, extracted_cv_json, extracted_job_json, cv_ocr_text
             @SuppressWarnings("unchecked")
             Map<String, Object> fullResponse = objectMapper.readValue(jsonResponse, Map.class);
             @SuppressWarnings("unchecked")
@@ -100,7 +99,6 @@ public class AIController {
             @SuppressWarnings("unchecked")
             Map<String, Object> details = (Map<String, Object>) scores.get("details");
 
-            // Create or update CandidateJobScore
             CandidateJobScore candidateJobScore = candidateJobScoreRepository
                     .findByCandidateIdAndJobPostId(candidate.getId(), job.getId())
                     .orElse(new CandidateJobScore());
@@ -118,10 +116,8 @@ public class AIController {
                 candidateJobScore.setInterviewScore((Double)details.get("interview_score"));
             }
 
-            // Set final score from root level
             candidateJobScore.setFinalScore((Double)scores.get("final_score"));
 
-            // Save extracted data if present
             if (fullResponse.containsKey("extracted_cv_json")) {
                 candidateJobScore.setExtractedCvJson(objectMapper.writeValueAsString(fullResponse.get("extracted_cv_json")));
             }
@@ -141,7 +137,9 @@ public class AIController {
     }
 
     @GetMapping("/jobs/{jobId}/applicants/{applicationId}/calculate-score")
-    public String calculateScoreForApplicationFromJobApplicants(@PathVariable Long jobId, @PathVariable Long applicationId) {
+    public String calculateScoreForApplicationFromJobApplicants(@PathVariable Long jobId,
+                                                                @PathVariable Long applicationId,
+                                                                @RequestParam(name = "model", defaultValue = "llama3.2:1b") String model) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || authentication.getName() == null) {
             return "redirect:/login";
@@ -163,12 +161,9 @@ public class AIController {
         JobApplication jobApplication = appOpt.get();
         Candidate candidate = jobApplication.getCandidate();
 
-        String model = "llama3.2:1b";
-
         try {
             String jsonResponse = aiIntegrationService.runAiScoring(candidate, job, model);
 
-            // Parse response from Python
             @SuppressWarnings("unchecked")
             Map<String, Object> fullResponse = objectMapper.readValue(jsonResponse, Map.class);
             @SuppressWarnings("unchecked")
@@ -181,7 +176,6 @@ public class AIController {
             @SuppressWarnings("unchecked")
             Map<String, Object> details = (Map<String, Object>) scores.get("details");
 
-            // Update JobApplication with scores
             if (details != null) {
                 jobApplication.setSemanticScore((Double)details.get("semantic_score"));
                 jobApplication.setSkillsScore((Double)details.get("skills_score"));
@@ -210,7 +204,8 @@ public class AIController {
     }
 
     @GetMapping("/jobs/{jobId}/applicants/calculate-all-scores")
-    public String calculateScoresForAllApplicants(@PathVariable Long jobId) {
+    public String calculateScoresForAllApplicants(@PathVariable Long jobId,
+                                                  @RequestParam(name = "model", defaultValue = "llama3.2:1b") String model) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || authentication.getName() == null) {
             return "redirect:/login";
@@ -222,7 +217,6 @@ public class AIController {
         }
         JobPost job = jobOpt.get();
 
-        // Get all applications for this job that don't have a final score yet
         List<JobApplication> applicationsWithoutScore = jobApplicationRepository.findByJobPostId(jobId).stream()
                 .filter(app -> app.getFinalScore() == null)
                 .toList();
@@ -231,7 +225,6 @@ public class AIController {
             return "redirect:/jobs/" + jobId + "/applicants?success=All%20applicants%20already%20have%20scores";
         }
 
-        String model = "llama3.2:1b";
         int successCount = 0;
         int failureCount = 0;
 
@@ -240,7 +233,6 @@ public class AIController {
             try {
                 String jsonResponse = aiIntegrationService.runAiScoring(candidate, job, model);
 
-                // Parse response from Python
                 @SuppressWarnings("unchecked")
                 Map<String, Object> fullResponse = objectMapper.readValue(jsonResponse, Map.class);
                 @SuppressWarnings("unchecked")
@@ -250,7 +242,6 @@ public class AIController {
                     @SuppressWarnings("unchecked")
                     Map<String, Object> details = (Map<String, Object>) scores.get("details");
 
-                    // Update JobApplication with scores
                     if (details != null) {
                         jobApplication.setSemanticScore((Double)details.get("semantic_score"));
                         jobApplication.setSkillsScore((Double)details.get("skills_score"));
@@ -271,7 +262,6 @@ public class AIController {
             }
         }
 
-        // Build success message without using String.format with %20
         String message = "Calculated%20scores%20for%20" + successCount + "%20applicants";
         if (failureCount > 0) {
             message += ".%20" + failureCount + "%20failed";

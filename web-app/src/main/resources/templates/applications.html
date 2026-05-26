@@ -21,6 +21,13 @@
         </a>
     </div>
 
+    <div class="d-flex align-items-center gap-2 mb-4">
+        <label for="aiModelSelect" class="fw-semibold text-dark">Select AI model:</label>
+        <select id="aiModelSelect" class="form-select form-select-sm w-auto" aria-label="AI model">
+            <option value="llama3.2:1b" selected>Fast</option>
+        </select>
+    </div>
+
     <div class="row">
         <div class="col-12">
 
@@ -50,20 +57,11 @@
                               th:text="${app.status}">
                         </span>
 
-                    <div class="score-badge-simple">
-                        <div class="score-wheel-container"
-                             th:style="'background: conic-gradient(#0e8b8c ' + ${(app.finalScore ?: 0) * 100} + '%, rgba(255,255,255,0.2) 0);'">
-                            <div class="score-inner-circle">
-                                <span class="fw-bolder text-dark-navy fs-5 lh-1"
-                                      th:text="${app.finalScore != null ? #numbers.formatDecimal(app.finalScore * 100, 1, 0) + '%' : '--'}">
-                                    0%
-                                </span>
-                            </div>
-                        </div>
-                        <span class="text-secondary fw-bold text-uppercase tracking-wide" style="font-size: 0.75rem;">Match Score</span>
-                    </div>
+
+                    <div th:replace="~{fragments/score-badge :: scoreBadge(score=${app.finalScore})}"></div>
 
                     <form th:action="@{/applications/score-application/{jobId}(jobId=${app.jobPostId})}" method="GET" class="d-inline">
+                        <input type="hidden" name="model" class="ai-model-input" value="llama3.2:1b">
                         <button type="submit" class="btn btn-sm btn-outline-teal rounded-pill px-3 py-2 fw-bold">
                             <i class="bi bi-calculator me-2"></i> Calculate Score
                         </button>
@@ -91,5 +89,19 @@
 <footer th:replace="~{fragments/footer :: subsol}"></footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    const aiModelSelect = document.getElementById('aiModelSelect');
+    const aiModelInputs = document.querySelectorAll('.ai-model-input');
+
+    if (aiModelSelect) {
+        const syncModel = () => {
+            aiModelInputs.forEach((input) => {
+                input.value = aiModelSelect.value;
+            });
+        };
+        syncModel();
+        aiModelSelect.addEventListener('change', syncModel);
+    }
+</script>
 </body>
 </html>

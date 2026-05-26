@@ -31,7 +31,6 @@
         </a>
     </div>
 
-    <!-- Candidate Profile -->
     <div th:if="${role == 'CANDIDATE'}" class="row">
         <div class="col-lg-8 mx-auto">
             <form th:action="@{/profile/candidate/update}" method="post" enctype="multipart/form-data">
@@ -68,7 +67,7 @@
 
                     <hr class="my-4">
 
-                    <!-- CV Section -->
+
                     <h4 class="text-dark-navy fw-bold mb-3">
                         <i class="bi bi-file-pdf me-2 text-danger"></i> Curriculum Vitae
                     </h4>
@@ -82,7 +81,7 @@
                         </small>
                     </div>
 
-                    <!-- Current CV display -->
+
                     <div th:if="${profile.cvFilePath}" class="alert alert-info rounded-3 mb-4" id="currentCvAlert">
                         <i class="bi bi-file-earmark-pdf me-2"></i>
                         <strong>Current CV:</strong>
@@ -113,7 +112,7 @@
         </div>
     </div>
 
-    <!-- Employer Profile -->
+
     <div th:if="${role == 'EMPLOYER'}" class="row">
         <div class="col-lg-8 mx-auto">
             <form th:action="@{/profile/employer/update}" method="post">

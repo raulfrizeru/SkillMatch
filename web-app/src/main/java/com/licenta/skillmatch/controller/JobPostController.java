@@ -255,4 +255,44 @@ public class JobPostController {
         return "redirect:/jobs";
     }
 
+    @PostMapping("/jobs/{jobId}/applicants/{applicationId}/book-interview")
+    public String bookInterview(@PathVariable Long jobId, @PathVariable Long applicationId,
+                                @RequestParam("interviewDateTime") String interviewDateTime,
+                                RedirectAttributes redirectAttributes) {
+        try {
+            java.time.LocalDateTime dateTime = java.time.LocalDateTime.parse(interviewDateTime);
+            jobApplicationService.bookInterview(applicationId, dateTime);
+            redirectAttributes.addFlashAttribute("successMessage", "Interview booked successfully!");
+            return "redirect:/jobs/" + jobId + "/applicants";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Failed to book interview: " + e.getMessage());
+            return "redirect:/jobs/" + jobId + "/applicants";
+        }
+    }
+
+    @PostMapping("/jobs/{jobId}/applicants/{applicationId}/hire")
+    public String hireCandidate(@PathVariable Long jobId, @PathVariable Long applicationId,
+                                RedirectAttributes redirectAttributes) {
+        try {
+            jobApplicationService.hireCandidate(applicationId);
+            redirectAttributes.addFlashAttribute("successMessage", "Candidate hired successfully!");
+            return "redirect:/jobs/" + jobId + "/applicants";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Failed to hire candidate: " + e.getMessage());
+            return "redirect:/jobs/" + jobId + "/applicants";
+        }
+    }
+
+    @PostMapping("/jobs/{jobId}/applicants/{applicationId}/reject")
+    public String rejectCandidate(@PathVariable Long jobId, @PathVariable Long applicationId,
+                                  RedirectAttributes redirectAttributes) {
+        try {
+            jobApplicationService.rejectCandidate(applicationId);
+            redirectAttributes.addFlashAttribute("successMessage", "Candidate rejected successfully!");
+            return "redirect:/jobs/" + jobId + "/applicants";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Failed to reject candidate: " + e.getMessage());
+            return "redirect:/jobs/" + jobId + "/applicants";
+        }
+    }
 }

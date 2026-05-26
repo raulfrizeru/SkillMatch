@@ -21,6 +21,7 @@
         </div>
         <div class="d-flex gap-2">
             <form th:action="@{/jobs/{jobId}/applicants/calculate-all-scores(jobId=${jobId})}" method="GET" class="d-inline">
+                <input type="hidden" name="model" class="ai-model-input" value="llama3.2:1b">
                 <button type="submit" class="btn btn-outline-teal shadow-sm rounded-pill px-4 py-2 fw-bold d-inline-flex align-items-center">
                     <i class="bi bi-calculator me-2"></i> Calculate Score to all
                 </button>
@@ -29,6 +30,13 @@
                 <i class="bi bi-arrow-left me-2"></i> Back to Job Details
             </a>
         </div>
+    </div>
+
+    <div class="d-flex align-items-center gap-2 mb-4">
+        <label for="aiModelSelect" class="fw-semibold text-dark">Select AI model:</label>
+        <select id="aiModelSelect" class="form-select form-select-sm w-auto" aria-label="AI model">
+            <option value="llama3.2:1b" selected>Fast</option>
+        </select>
     </div>
 
     <div class="row">
@@ -64,28 +72,66 @@
                           th:text="${app.status}">
                     </span>
 
-                    <div class="score-badge-simple">
-                        <div class="score-wheel-container"
-                             th:style="'background: conic-gradient(#0e8b8c ' + ${(app.finalScore ?: 0) * 100} + '%, rgba(255,255,255,0.2) 0);'">
-                            <div class="score-inner-circle">
-                                <span class="fw-bolder text-dark-navy fs-5 lh-1"
-                                      th:text="${app.finalScore != null ? #numbers.formatDecimal(app.finalScore * 100, 1, 0) + '%' : '--'}">
-                                    0%
-                                </span>
-                            </div>
-                        </div>
-                        <span class="text-secondary fw-bold text-uppercase tracking-wide" style="font-size: 0.75rem;">Match Score</span>
-                    </div>
+                    <!-- Score Badge -->
+                    <div th:replace="~{fragments/score-badge :: scoreBadge(score=${app.finalScore})}"></div>
 
-                    <div class="d-flex gap-2">
+                    <!-- Action Buttons Section -->
+                    <div class="d-flex gap-2 flex-wrap">
                         <a th:href="@{/{path}(path=${app.candidateCvPath})}" target="_blank" class="btn btn-info rounded-pill px-4 py-2 fw-bold shadow-sm">
                             <i class="bi bi-file-pdf me-1"></i> View CV
                         </a>
                         <form th:action="@{/jobs/{jobId}/applicants/{applicationId}/calculate-score(jobId=${jobId},applicationId=${app.id})}" method="GET" class="d-inline">
+                            <input type="hidden" name="model" class="ai-model-input" value="llama3.2:1b">
                             <button type="submit" class="btn btn-outline-teal rounded-pill px-4 py-2 fw-bold">
                                 <i class="bi bi-calculator me-1"></i> Calculate Score
                             </button>
                         </form>
+
+                        <!-- Book Interview Button -->
+                        <button type="button" class="btn btn-primary rounded-pill px-4 py-2 fw-bold" data-bs-toggle="modal" th:attr="data-bs-target='#interviewModal' + ${app.id}">
+                            <i class="bi bi-calendar-event me-1"></i> Book Interview
+                        </button>
+
+                        <!-- Hire Button -->
+                        <form th:action="@{/jobs/{jobId}/applicants/{applicationId}/hire(jobId=${jobId},applicationId=${app.id})}" method="POST" class="d-inline">
+                            <button type="submit" class="btn btn-success rounded-pill px-4 py-2 fw-bold" onclick="return confirm('Are you sure you want to hire this candidate?');">
+                                <i class="bi bi-check-circle me-1"></i> Hire
+                            </button>
+                        </form>
+
+                        <!-- Reject Button -->
+                        <form th:action="@{/jobs/{jobId}/applicants/{applicationId}/reject(jobId=${jobId},applicationId=${app.id})}" method="POST" class="d-inline">
+                            <button type="submit" class="btn btn-danger rounded-pill px-4 py-2 fw-bold" onclick="return confirm('Are you sure you want to reject this candidate?');">
+                                <i class="bi bi-x-circle me-1"></i> Reject
+                            </button>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- All Book Interview Modals - Outside th:each -->
+            <div th:each="app : ${applicants}">
+                <div class="modal fade" th:attr="id='interviewModal' + ${app.id}" tabindex="-1" aria-labelledby="interviewModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="interviewModalLabel">Book Interview</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <form th:action="@{/jobs/{jobId}/applicants/{applicationId}/book-interview(jobId=${jobId},applicationId=${app.id})}" method="POST">
+                                <div class="modal-body">
+                                    <div class="mb-3">
+                                        <label th:attr="for='interviewDateTime' + ${app.id}" class="form-label">Interview Date & Time</label>
+                                        <input type="datetime-local" class="form-control" th:attr="id='interviewDateTime' + ${app.id}" name="interviewDateTime" required>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                    <button type="submit" class="btn btn-primary">Book Interview</button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
 
                 </div>
@@ -107,5 +153,19 @@
 <footer th:replace="~{fragments/footer :: subsol}"></footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    const aiModelSelect = document.getElementById('aiModelSelect');
+    const aiModelInputs = document.querySelectorAll('.ai-model-input');
+
+    if (aiModelSelect) {
+        const syncModel = () => {
+            aiModelInputs.forEach((input) => {
+                input.value = aiModelSelect.value;
+            });
+        };
+        syncModel();
+        aiModelSelect.addEventListener('change', syncModel);
+    }
+</script>
 </body>
 </html>

@@ -149,13 +149,11 @@ public class UserController {
     }
 
     private String uploadCvFile(Long candidateId, MultipartFile file, String oldCvPath) throws Exception {
-        // Create uploads directory if it doesn't exist
         File uploadsDir = new File(uploadDir + File.separator + "cv");
         if (!uploadsDir.exists()) {
             uploadsDir.mkdirs();
         }
 
-        // Delete old CV file if it exists
         if (oldCvPath != null && !oldCvPath.isEmpty()) {
             try {
                 File oldFile = new File(oldCvPath);
@@ -166,11 +164,9 @@ public class UserController {
                 System.err.println("Could not delete old CV file: " + e.getMessage());
             }
         }
-        //unique idendifier for the file name to avoid conflicts
         String fileName = "user_" + candidateId + "_cv_" + UUID.randomUUID() + ".pdf";
         Path filePath = Paths.get(uploadsDir.getAbsolutePath(), fileName);
 
-        // Save file
         Files.write(filePath, file.getBytes());
 
         return "uploads/cv/" + fileName;

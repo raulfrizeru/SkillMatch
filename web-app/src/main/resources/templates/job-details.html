@@ -33,6 +33,13 @@
         </a>
     </div>
 
+    <div class="d-flex align-items-center gap-2 mb-4">
+        <label for="aiModelSelect" class="fw-semibold text-dark">Select AI model:</label>
+        <select id="aiModelSelect" class="form-select form-select-sm w-auto" aria-label="AI model">
+            <option value="llama3.2:1b" selected>Fast</option>
+        </select>
+    </div>
+
     <div class="row">
         <div class="col-lg-8 mx-auto">
             <div class="glass-section-card p-5 mb-4">
@@ -57,26 +64,8 @@
                                 </span>
                             </div>
                             <!-- Score wheel from either CandidateJobScore or JobApplication -->
-                            <div th:if="${role == 'CANDIDATE' && (candidateJobScore != null || jobApplicationScore != null)}" class="d-flex align-items-center gap-2">
-                                <div class="position-relative" style="width: 60px; height: 60px;">
-                                    <svg class="position-absolute" style="width: 100%; height: 100%;">
-                                        <circle cx="30" cy="30" r="28" fill="none" stroke="#e9ecef" stroke-width="4" />
-                                        <circle cx="30" cy="30" r="28" fill="none" stroke="#20c997" stroke-width="4"
-                                                stroke-dasharray="175.929"
-                                                stroke-dashoffset="0"
-                                                th:stroke-dashoffset="${176 - ((candidateJobScore != null ? candidateJobScore.finalScore : jobApplicationScore.finalScore) * 176)}"
-                                                transform="rotate(-90 30 30)"
-                                                style="transition: stroke-dashoffset 0.3s ease;" />
-                                    </svg>
-                                    <div class="position-absolute top-50 start-50 translate-middle text-center">
-                                        <small class="d-block fw-bold text-dark"
-                                               th:text="${#numbers.formatDecimal((candidateJobScore != null ? candidateJobScore.finalScore : jobApplicationScore.finalScore) * 100, 0, 0)}">0</small>
-                                        <small class="text-muted d-block" style="font-size: 0.65rem;">%</small>
-                                    </div>
-                                </div>
-                                <div class="ms-2">
-                                    <small class="text-muted d-block">Match Score</small>
-                                </div>
+                            <div th:if="${role == 'CANDIDATE' && (candidateJobScore != null || jobApplicationScore != null)}">
+                                <div th:replace="~{fragments/score-badge :: scoreBadge(score=${candidateJobScore != null ? candidateJobScore.finalScore : jobApplicationScore.finalScore})}"></div>
                             </div>
                         </div>
                     </div>
@@ -98,7 +87,7 @@
 
                 <hr class="my-4">
 
-                <!-- Applicants Section for Employer) -->
+
                 <div th:if="${role == 'EMPLOYER'}" class="mb-4">
                     <label class="text-muted small fw-bold">Applicants</label>
                     <div class="d-flex align-items-center justify-content-between">
@@ -121,7 +110,7 @@
                         <i class="bi bi-arrow-left me-2"></i> Back
                     </a>
 
-                    <!-- For Candidate -->
+
                     <div th:if="${role == 'CANDIDATE'}">
                         <div class="d-flex gap-2">
                             <button th:if="${hasCv}" class="btn btn-teal rounded-pill px-5 py-2 fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#applyModal">
@@ -132,6 +121,7 @@
                             </button>
 
                             <form th:action="@{/jobs/{jobId}/calculate-match-score(jobId=${job.id})}" method="GET" class="d-inline">
+                                <input type="hidden" name="model" class="ai-model-input" value="llama3.2:1b">
                                 <button type="submit" class="btn btn-outline-teal rounded-pill px-5 py-2 fw-bold">
                                     <i class="bi bi-calculator me-2"></i> Calculate Match Score
                                 </button>
@@ -156,7 +146,7 @@
 
 </div>
 
-<!-- Apply Modal -->
+
 <div class="modal fade" id="applyModal" tabindex="-1" aria-labelledby="applyModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content glass-modal">
@@ -185,6 +175,19 @@
 <script>
     function submitApplication() {
         document.getElementById('applyForm').submit();
+    }
+
+    const aiModelSelect = document.getElementById('aiModelSelect');
+    const aiModelInputs = document.querySelectorAll('.ai-model-input');
+
+    if (aiModelSelect) {
+        const syncModel = () => {
+            aiModelInputs.forEach((input) => {
+                input.value = aiModelSelect.value;
+            });
+        };
+        syncModel();
+        aiModelSelect.addEventListener('change', syncModel);
     }
 </script>
 </body>

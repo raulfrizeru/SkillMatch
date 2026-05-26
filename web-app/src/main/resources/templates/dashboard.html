@@ -1,27 +1,331 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SkillMatch - Dashboard</title>
     <head th:replace="~{fragments/navbar :: bootstrap-css}"></head>
 </head>
-<body class="bg-light d-flex flex-column min-vh-100">
-
+<body class="d-flex flex-column min-vh-100">
 <div th:replace="~{fragments/navbar :: menu}"></div>
 
-<div class="container flex-grow-1 mt-5 pt-5">
-    <div class="row">
-        <div class="col-12">
-            <h2 class="fw-bold mb-4">Dashboard</h2>
-            <div class="card shadow-sm border-0 mb-4">
-                <div class="card-body p-4 text-center">
-                    <h4 class="text-primary mb-3">Welcome to your Dashboard!</h4>
-                    <p class="text-muted">You have successfully logged in.</p>
+<div class="container flex-grow-1 pt-5 mt-5 mb-5">
+
+    <div th:if="${successMessage}" class="alert alert-success bg-white bg-opacity-75 border-success border-opacity-50 text-success alert-dismissible fade show rounded-pill shadow-sm mb-4 px-4 py-3" role="alert">
+        <i class="bi bi-check-circle-fill me-2 fs-5 align-middle"></i>
+        <span class="fw-bold align-middle" th:text="${successMessage}"></span>
+        <button type="button" class="btn-close mt-1 me-2" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <div th:if="${errorMessage}" class="alert alert-danger bg-white bg-opacity-75 border-danger border-opacity-50 text-danger alert-dismissible fade show rounded-pill shadow-sm mb-4 px-4 py-3" role="alert">
+        <i class="bi bi-exclamation-circle-fill me-2 fs-5 align-middle"></i>
+        <span class="fw-bold align-middle" th:text="${errorMessage}"></span>
+        <button type="button" class="btn-close mt-1 me-2" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <div class="mb-4">
+        <h1 class="fw-bolder text-dark-navy mb-1">Dashboard</h1>
+        <p class="text-dark opacity-75 mb-0 fs-5">
+            Welcome back, <span class="fw-bold text-teal" th:text="${role == 'CANDIDATE' ? candidateName : companyName}">User Name</span>!
+        </p>
+    </div>
+
+    <div th:if="${role == 'CANDIDATE'}">
+
+        <div class="row g-4 mb-4">
+            <div class="col-lg-6">
+                <div class="glass-section-card dashboard-panel h-100 d-flex flex-column">
+                    <h4 class="fw-bolder text-dark-navy mb-4 d-flex align-items-center">
+                        <div class="bg-white bg-opacity-50 p-2 rounded-circle me-3 shadow-sm"><i class="bi bi-calendar3-event text-teal fs-5"></i></div>
+                        Upcoming Interviews
+                    </h4>
+
+                    <div class="dashboard-scroll-area flex-grow-1">
+                        <div th:if="${!upcomingInterviews.isEmpty()}" class="d-flex flex-column gap-3">
+                            <div th:each="interview : ${upcomingInterviews}" class="dashboard-item-card p-3">
+                                <h6 class="fw-bold text-dark-navy mb-1" th:text="${interview.jobTitle}">Job Title</h6>
+                                <p class="text-dark opacity-75 small mb-3">
+                                    <i class="bi bi-building text-teal me-1"></i> <span th:text="${interview.companyName}">Company</span>
+                                </p>
+                                <div class="d-flex justify-content-between align-items-center bg-white bg-opacity-50 p-2 rounded">
+                                    <span class="small fw-medium text-muted"><i class="bi bi-clock me-1"></i>Date & Time</span>
+                                    <span class="fw-bold text-teal small" th:text="${#temporals.format(interview.interviewDateTime, 'dd MMM yyyy - HH:mm')}">01 Jan 2026 - 10:00</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div th:if="${upcomingInterviews.isEmpty()}" class="text-center py-5">
+                            <i class="bi bi-calendar-x text-muted opacity-50 display-4"></i>
+                            <p class="mt-3 text-dark opacity-75 fw-medium">No upcoming interviews.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="glass-section-card dashboard-panel h-100 d-flex flex-column">
+                    <h4 class="fw-bolder text-dark-navy mb-4 d-flex align-items-center">
+                        <div class="bg-white bg-opacity-50 p-2 rounded-circle me-3 shadow-sm"><i class="bi bi-calendar-check text-teal fs-5"></i></div>
+                        Past Interviews
+                    </h4>
+
+                    <div class="dashboard-scroll-area flex-grow-1">
+                        <div th:if="${!pastInterviews.isEmpty()}" class="d-flex flex-column gap-3">
+                            <div th:each="interview : ${pastInterviews}" class="dashboard-item-card p-3">
+                                <h6 class="fw-bold text-dark-navy mb-1" th:text="${interview.jobTitle}">Job Title</h6>
+                                <p class="text-dark opacity-75 small mb-3">
+                                    <i class="bi bi-building text-teal me-1"></i> <span th:text="${interview.companyName}">Company</span>
+                                </p>
+                                <div class="d-flex justify-content-between align-items-center bg-white bg-opacity-50 p-2 rounded">
+                                    <span class="small fw-medium text-muted">Final Score</span>
+                                    <div th:if="${interview.interviewScore != null}" class="d-flex align-items-center gap-1">
+                                        <span class="fw-bold text-dark" th:text="${#numbers.formatDecimal(interview.interviewScore, 1, 2)}">0.00</span>
+                                        <span class="text-muted small">/ 100</span>
+                                    </div>
+                                    <span th:if="${interview.interviewScore == null}" class="badge bg-secondary bg-opacity-10 text-secondary border">Pending Rating</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div th:if="${pastInterviews.isEmpty()}" class="text-center py-5">
+                            <i class="bi bi-hourglass-split text-muted opacity-50 display-4"></i>
+                            <p class="mt-3 text-dark opacity-75 fw-medium">No past interviews yet.</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
+
+        <div class="row g-4">
+            <div class="col-12">
+                <div class="glass-section-card dashboard-panel">
+                    <h4 class="fw-bolder text-dark-navy mb-4 d-flex align-items-center">
+                        <div class="bg-white bg-opacity-50 p-2 rounded-circle me-3 shadow-sm"><i class="bi bi-graph-up text-teal fs-5"></i></div>
+                        Your Score Statistics
+                    </h4>
+
+                    <div th:if="${!scoreStats.isEmpty()}" class="row g-4">
+                        <div class="col-lg-4 d-flex flex-column gap-3">
+                            <div th:each="stat : ${scoreStats}" th:if="${stat.isMax}" class="dashboard-item-card p-3 border-start border-success border-4 h-50 d-flex flex-column justify-content-center">
+                                <h6 class="text-success fw-bold mb-2 text-uppercase small tracking-wide">Highest Match</h6>
+                                <h6 class="fw-bold text-dark-navy mb-1" th:text="${stat.jobTitle}">Job Title</h6>
+                                <p class="text-dark opacity-75 small mb-3"><span th:text="${stat.companyName}">Company</span></p>
+                                <div class="mt-auto bg-success bg-opacity-10 p-2 rounded d-flex justify-content-between align-items-center">
+                                    <span class="small fw-bold text-success">Score</span>
+                                    <span class="fw-bolder text-success fs-5 lh-1" th:text="${#numbers.formatDecimal(stat.score, 1, 2)} + '%'">99.00%</span>
+                                </div>
+                            </div>
+
+                            <div th:each="stat : ${scoreStats}" th:if="${stat.isMin}" class="dashboard-item-card p-3 border-start border-warning border-4 h-50 d-flex flex-column justify-content-center">
+                                <h6 class="text-warning fw-bold mb-2 text-uppercase small tracking-wide">Lowest Match</h6>
+                                <h6 class="fw-bold text-dark-navy mb-1" th:text="${stat.jobTitle}">Job Title</h6>
+                                <p class="text-dark opacity-75 small mb-3"><span th:text="${stat.companyName}">Company</span></p>
+                                <div class="mt-auto bg-warning bg-opacity-10 p-2 rounded d-flex justify-content-between align-items-center">
+                                    <span class="small fw-bold text-warning">Score</span>
+                                    <span class="fw-bolder text-warning fs-5 lh-1" th:text="${#numbers.formatDecimal(stat.score, 1, 2)} + '%'">23.00%</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-8">
+                            <div class="dashboard-scroll-area h-100 bg-white bg-opacity-25 rounded-4 p-3 border shadow-sm">
+                                <h6 class="fw-bold text-dark-navy mb-3 px-2">All Application Scores</h6>
+                                <div class="row g-2">
+                                    <div th:each="stat : ${scoreStats}" class="col-md-6 col-xl-4">
+                                        <div class="dashboard-item-card p-3 h-100 d-flex flex-column justify-content-between">
+                                            <div>
+                                                <p class="mb-1 fw-bold text-dark-navy small text-truncate" th:text="${stat.jobTitle}">Job Title</p>
+                                                <p class="small text-muted mb-2 text-truncate" th:text="${stat.companyName}">Company</p>
+                                            </div>
+                                            <div class="d-flex align-items-center justify-content-between pt-2 border-top border-white border-opacity-50">
+                                                <span class="text-dark opacity-75 small fw-medium">Match</span>
+                                                <span class="badge bg-teal fw-bold rounded-pill" th:text="${#numbers.formatDecimal(stat.score, 1, 2)} + '%'">85%</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div th:if="${scoreStats.isEmpty()}" class="text-center py-5">
+                        <i class="bi bi-graph-up text-muted opacity-50 display-4"></i>
+                        <p class="mt-3 text-dark opacity-75 fw-medium">No scores yet. Apply to jobs and calculate your match!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
+
+    <div th:if="${role == 'EMPLOYER'}">
+
+        <div class="row g-4 mb-4">
+
+            <div class="col-lg-6">
+                <div class="glass-section-card dashboard-panel h-100 d-flex flex-column border-warning border-opacity-50" style="background: rgba(255, 243, 205, 0.3);">
+                    <h4 class="fw-bolder text-dark-navy mb-4 d-flex align-items-center">
+                        <div class="bg-white bg-opacity-75 p-2 rounded-circle me-3 shadow-sm"><i class="bi bi-exclamation-circle text-warning fs-5"></i></div>
+                        Pending Ratings
+                    </h4>
+
+                    <div class="dashboard-scroll-area flex-grow-1">
+                        <div th:if="${!overdueInterviews.isEmpty()}" class="d-flex flex-column gap-3">
+                            <div th:each="interview : ${overdueInterviews}" class="dashboard-item-card p-3 border-start border-warning border-4 bg-white bg-opacity-75">
+                                <h6 class="fw-bold text-dark-navy mb-1" th:text="${interview.candidateName}">Candidate Name</h6>
+                                <p class="text-dark opacity-75 small mb-3">
+                                    <i class="bi bi-briefcase text-teal me-1"></i> <span th:text="${interview.jobTitle}">Job Title</span>
+                                </p>
+
+                                <form th:action="@{/interviews/{id}/rate(id=${interview.id})}" method="POST" class="mb-0 d-flex align-items-end gap-2 bg-warning bg-opacity-10 p-2 rounded">
+                                    <div class="flex-grow-1">
+                                        <label for="score" class="form-label small fw-bold text-dark-navy mb-1">Score (0-100)</label>
+                                        <input type="number" class="form-control form-control-sm border-0 shadow-sm" id="score" name="score" min="0" max="100" step="1" required>
+                                    </div>
+                                    <button type="submit" class="btn btn-warning btn-sm fw-bold shadow-sm px-3 text-dark-navy">
+                                        Rate <i class="bi bi-check2 ms-1"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div th:if="${overdueInterviews.isEmpty()}" class="text-center py-5">
+                            <i class="bi bi-check2-all text-muted opacity-50 display-4"></i>
+                            <p class="mt-3 text-dark opacity-75 fw-medium">All caught up! No pending ratings.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="glass-section-card dashboard-panel h-100 d-flex flex-column">
+                    <h4 class="fw-bolder text-dark-navy mb-4 d-flex align-items-center">
+                        <div class="bg-white bg-opacity-50 p-2 rounded-circle me-3 shadow-sm"><i class="bi bi-calendar3-event text-teal fs-5"></i></div>
+                        Upcoming Interviews
+                    </h4>
+
+                    <div class="dashboard-scroll-area flex-grow-1">
+                        <div th:if="${!upcomingInterviews.isEmpty()}" class="d-flex flex-column gap-3">
+                            <div th:each="interview : ${upcomingInterviews}" class="dashboard-item-card p-3">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h6 class="fw-bold text-dark-navy mb-0" th:text="${interview.candidateName}">Candidate Name</h6>
+                                    <span class="badge bg-teal bg-opacity-10 text-teal border border-teal border-opacity-25 rounded-pill small" th:text="${#temporals.format(interview.interviewDateTime, 'HH:mm')}">10:00</span>
+                                </div>
+                                <p class="text-dark opacity-75 small mb-3">
+                                    <i class="bi bi-briefcase text-muted me-1"></i> <span th:text="${interview.jobTitle}">Job Title</span>
+                                </p>
+                                <div class="bg-white bg-opacity-50 px-2 py-1 rounded d-inline-block small fw-medium text-dark-navy shadow-sm border border-white">
+                                    <i class="bi bi-calendar-day text-teal me-1"></i>
+                                    <span th:text="${#temporals.format(interview.interviewDateTime, 'dd MMM yyyy')}">01 Jan 2026</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div th:if="${upcomingInterviews.isEmpty()}" class="text-center py-5">
+                            <i class="bi bi-calendar-x text-muted opacity-50 display-4"></i>
+                            <p class="mt-3 text-dark opacity-75 fw-medium">No scheduled interviews.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="row g-4">
+
+            <div class="col-lg-5">
+                <div class="glass-section-card dashboard-panel h-100 d-flex flex-column">
+                    <h4 class="fw-bolder text-dark-navy mb-4 d-flex align-items-center">
+                        <div class="bg-white bg-opacity-50 p-2 rounded-circle me-3 shadow-sm"><i class="bi bi-calendar-check text-teal fs-5"></i></div>
+                        Past Interviews
+                    </h4>
+
+                    <div class="dashboard-scroll-area flex-grow-1">
+                        <div th:if="${!pastInterviews.isEmpty()}" class="d-flex flex-column gap-3">
+                            <div th:each="interview : ${pastInterviews}" class="dashboard-item-card p-3 d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="fw-bold text-dark-navy mb-1" th:text="${interview.candidateName}">Candidate Name</h6>
+                                    <p class="text-muted small mb-0"><span th:text="${interview.jobTitle}">Job Title</span></p>
+                                </div>
+                                <div class="bg-white bg-opacity-75 px-3 py-2 rounded shadow-sm border text-center">
+                                    <span class="d-block small text-muted lh-1 mb-1" style="font-size: 0.65rem; text-transform: uppercase;">Score</span>
+                                    <span class="fw-bolder text-dark-navy lh-1" th:text="${#numbers.formatDecimal(interview.interviewScore, 1, 2)}">0.0</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div th:if="${pastInterviews.isEmpty()}" class="text-center py-5">
+                            <i class="bi bi-hourglass-split text-muted opacity-50 display-4"></i>
+                            <p class="mt-3 text-dark opacity-75 fw-medium">No past interviews to display.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-7">
+                <div class="glass-section-card dashboard-panel h-100 d-flex flex-column">
+                    <h4 class="fw-bolder text-dark-navy mb-4 d-flex align-items-center">
+                        <div class="bg-white bg-opacity-50 p-2 rounded-circle me-3 shadow-sm"><i class="bi bi-bar-chart-line text-teal fs-5"></i></div>
+                        Job Score Analytics
+                    </h4>
+
+                    <div class="dashboard-scroll-area flex-grow-1">
+                        <div th:if="${!jobStats.isEmpty()}" class="row g-3">
+                            <div th:each="jobStat : ${jobStats}" class="col-md-6">
+                                <div class="dashboard-item-card p-3 h-100">
+                                    <h6 class="fw-bold text-dark-navy mb-3 text-truncate border-bottom border-white pb-2" th:title="${jobStat.jobTitle}" th:text="${jobStat.jobTitle}">Job Title</h6>
+
+                                    <div class="row g-2 mb-3">
+                                        <div class="col-6">
+                                            <div class="bg-white bg-opacity-50 p-2 rounded text-center h-100">
+                                                <span class="d-block text-muted small" style="font-size: 0.7rem;">Avg Score</span>
+                                                <span class="fw-bold text-success" th:text="${jobStat.averageScore != null ? #numbers.formatDecimal(jobStat.averageScore, 1, 2) + '%' : 'N/A'}">85.00%</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="bg-white bg-opacity-50 p-2 rounded text-center h-100">
+                                                <span class="d-block text-muted small" style="font-size: 0.7rem;">Max Score</span>
+                                                <span class="fw-bold text-teal" th:text="${jobStat.maxScore != null ? #numbers.formatDecimal(jobStat.maxScore, 1, 2) + '%' : 'N/A'}">99.00%</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="bg-white bg-opacity-50 p-2 rounded text-center h-100">
+                                                <span class="d-block text-muted small" style="font-size: 0.7rem;">Min Score</span>
+                                                <span class="fw-bold text-warning" th:text="${jobStat.minScore != null ? #numbers.formatDecimal(jobStat.minScore, 1, 2) + '%' : 'N/A'}">45.00%</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="bg-white bg-opacity-50 p-2 rounded text-center h-100">
+                                                <span class="d-block text-muted small" style="font-size: 0.7rem;">Median</span>
+                                                <span class="fw-bold text-info" th:text="${jobStat.medianScore != null ? #numbers.formatDecimal(jobStat.medianScore, 1, 2) + '%' : 'N/A'}">80.00%</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="d-flex justify-content-between align-items-center bg-dark bg-opacity-10 px-3 py-2 rounded-pill">
+                                        <span class="small fw-bold text-dark-navy">Total Applicants</span>
+                                        <span class="badge bg-dark-navy rounded-pill" th:text="${jobStat.totalApplicants}">12</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div th:if="${jobStats.isEmpty()}" class="text-center py-5">
+                            <i class="bi bi-graph-up text-muted opacity-50 display-4"></i>
+                            <p class="mt-3 text-dark opacity-75 fw-medium">No analytical data available yet.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
 </div>
+
 <footer th:replace="~{fragments/footer :: subsol}"></footer>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

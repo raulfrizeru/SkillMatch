@@ -151,7 +151,6 @@ public class UserService {
         return userRepository.findByUsername(username);
     }
 
-    // Profile methods for Candidate
     public CandidateProfileDto getCandidateProfile(Long candidateId) {
         Candidate candidate = candidateRepository.findById(candidateId)
                 .orElseThrow(() -> new IllegalArgumentException("Candidate not found with id: " + candidateId));

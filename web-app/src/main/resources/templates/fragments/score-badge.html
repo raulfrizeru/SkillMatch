@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+</head>
+<body>
+    <!-- Score Badge Component -->
+    <!-- Usage: th:include="~{fragments/score-badge :: scoreBadge(score=${app.finalScore})}" -->
+    <div th:fragment="scoreBadge(score)" class="score-badge-simple">
+        <div class="score-wheel-container"
+             th:attr="data-score=${score ?: 0}"
+             th:style="|--score-percent: ${(score ?: 0) * 100}%; --score-color: ${score == null ? '#d1d5db' : (score < 0.4 ? '#8B0000' : (score < 0.5 ? '#DC143C' : (score < 0.6 ? '#FF8C00' : (score < 0.7 ? '#32CD32' : (score < 0.8 ? '#228B22' : (score < 0.9 ? '#006400' : '#4169E1'))))))}|">
+            <div class="score-inner-circle">
+                <span class="score-percentage"
+                      th:text="${score != null ? #numbers.formatDecimal(score * 100, 1, 0) + '%' : '--'}">
+                    0%
+                </span>
+            </div>
+        </div>
+        <span class="score-label">Match Score</span>
+    </div>
+</body>
+</html>

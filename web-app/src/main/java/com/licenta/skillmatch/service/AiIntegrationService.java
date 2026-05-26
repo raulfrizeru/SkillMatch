@@ -103,7 +103,7 @@ public class AiIntegrationService {
             if (exitCode != 0) {
                 throw new RuntimeException("Python script failed: " + exitCode + ". Output: " + output.toString());
             }
-            // 8. AI module response
+            // AI module response
             Map<String, Object> pythonResponse = objectMapper.readValue(output.toString(), Map.class);
 
             // update CV JSON

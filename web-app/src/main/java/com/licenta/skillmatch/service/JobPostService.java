@@ -52,7 +52,7 @@ public class JobPostService {
                     .collect(Collectors.toList());
         }
 
-        // Sort
+
         if ("date_newest".equals(sortBy)) {
             jobs.sort((a, b) -> b.getCreatedDate().compareTo(a.getCreatedDate()));
         } else if ("date_oldest".equals(sortBy)) {
@@ -69,7 +69,6 @@ public class JobPostService {
     public List<JobPostDto> findJobPostsByEmployerIdFiltered(Long employerId, String searchTerm, String sortBy, String statusFilter) {
         List<JobPostDto> jobs = findJobPostsByEmployerId(employerId);
 
-        // Filter by title, description or company
         if (searchTerm != null && !searchTerm.isEmpty()) {
             String lowerSearchTerm = searchTerm.toLowerCase();
             jobs = jobs.stream()
@@ -85,7 +84,7 @@ public class JobPostService {
             jobs = jobs.stream().filter(job -> !job.isActive()).collect(Collectors.toList());
         }
 
-        // Sort
+
         if ("date_newest".equals(sortBy)) {
             jobs.sort((a, b) -> b.getCreatedDate().compareTo(a.getCreatedDate()));
         } else if ("date_oldest".equals(sortBy)) {

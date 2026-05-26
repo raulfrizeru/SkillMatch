@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface PastInterviewRepository extends JpaRepository <PastInterview, Long> {
     List<PastInterview> findByCandidateId(Long candidateId);
+    List<PastInterview> findByCompanyAndJobTitle(String company, String jobTitle);
 }
