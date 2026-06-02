@@ -91,6 +91,11 @@
                           th:text="${job.isActive ? 'Open' : 'Closed'}">
                     </span>
 
+                    <!-- Score badge pentru candidați dacă au scor de potrivire -->
+                    <div th:if="${role == 'CANDIDATE' && job.candidateScore != null}">
+                        <div th:replace="~{fragments/score-badge :: scoreBadge(score=${job.candidateScore})}"></div>
+                    </div>
+
                     <div th:if="${role == 'EMPLOYER'}" class="badge rounded-pill px-3 py-2 fw-bold bg-info bg-opacity-10 text-info border border-info border-opacity-25">
                         <i class="bi bi-people me-1"></i>
                         <span th:text="${job.applicantCount}">0</span>

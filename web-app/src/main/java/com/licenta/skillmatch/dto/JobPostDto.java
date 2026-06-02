@@ -24,4 +24,5 @@ public class JobPostDto {
     private String employerDescription;
     private LocalDateTime createdDate;
     private int applicantCount;
+    private Double candidateScore;
 }

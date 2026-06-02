@@ -7,6 +7,7 @@ import com.licenta.skillmatch.entity.Candidate;
 import com.licenta.skillmatch.entity.User;
 import com.licenta.skillmatch.entity.CandidateJobScore;
 import com.licenta.skillmatch.entity.JobApplication;
+import com.licenta.skillmatch.repository.JobPostRepository;
 import com.licenta.skillmatch.service.JobPostService;
 import com.licenta.skillmatch.service.JobApplicationService;
 import com.licenta.skillmatch.repository.UserRepository;
@@ -23,6 +24,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Controller
 public class JobPostController {
@@ -41,6 +43,9 @@ public class JobPostController {
     private JobApplicationRepository jobApplicationRepository;
 
     @Autowired
+    private JobPostRepository jobPostRepository;
+
+    @Autowired
     private UserService userService;
 
     @GetMapping("/jobs")
@@ -56,7 +61,32 @@ public class JobPostController {
                 .orElse("");
 
         if (role.equals("ROLE_CANDIDATE")) {
+            CandidateProfileDto candidate = userService.getCandidateProfileByUsername(username);
             List<JobPostDto> jobs = jobPostService.findActiveJobPostsFiltered(search, sortBy);
+
+            if (candidate != null) {
+                jobs = jobs.stream().map(job -> {
+                    Optional<CandidateJobScore> scoreOpt = candidateJobScoreRepository
+                            .findByCandidateIdAndJobPostId(candidate.getId(), job.getId());
+
+                    if (scoreOpt.isPresent()) {
+                        return jobPostService.convertToDto(
+                                jobPostRepository.findById(job.getId()).orElse(null),
+                                scoreOpt.get().getFinalScore()
+                        );
+                    }
+                    JobApplicationDto appDto = jobApplicationService.getJobApplicationDtoByCandidateAndJob(candidate.getId(), job.getId());
+                    if (appDto != null && appDto.getFinalScore() != null) {
+                        return jobPostService.convertToDto(
+                                jobPostRepository.findById(job.getId()).orElse(null),
+                                appDto.getFinalScore()
+                        );
+                    }
+
+                    return job;
+                }).collect(Collectors.toList());
+            }
+
             model.addAttribute("jobs", jobs);
             model.addAttribute("role", "CANDIDATE");
             model.addAttribute("search", search);

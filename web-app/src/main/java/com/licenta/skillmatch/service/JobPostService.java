@@ -135,6 +135,10 @@ public class JobPostService {
     }
 
     public JobPostDto convertToDto(JobPost jobPost) {
+        return convertToDto(jobPost, null);
+    }
+
+    public JobPostDto convertToDto(JobPost jobPost, Double candidateScore) {
         if (jobPost == null || jobPost.getEmployer() == null) {
             return null;
         }
@@ -148,6 +152,7 @@ public class JobPostService {
                 .employerDescription(jobPost.getEmployer().getDescription())
                 .createdDate(jobPost.getCreatedDate())
                 .applicantCount(jobPost.getApplications() != null ? jobPost.getApplications().size() : 0)
+                .candidateScore(candidateScore)
                 .build();
     }
 
