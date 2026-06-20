@@ -376,12 +376,12 @@ public class JobApplicationService {
                 .map(app -> {
                     double score = Math.round(app.getFinalScore() * 10000.0) / 100.0;
                     return CandidateScoreStatsDto.builder()
-                        .jobTitle(app.getJobPost().getTitle())
-                        .companyName(app.getJobPost().getEmployer().getCompanyName())
-                        .score(score)
-                        .isMax(score == maxScore)
-                        .isMin(score == minScore)
-                        .build();
+                            .jobTitle(app.getJobPost().getTitle())
+                            .companyName(app.getJobPost().getEmployer().getCompanyName())
+                            .score(score)
+                            .isMax(score == maxScore)
+                            .isMin(score == minScore)
+                            .build();
                 })
                 .sorted((a, b) -> b.getScore().compareTo(a.getScore()))
                 .toList();

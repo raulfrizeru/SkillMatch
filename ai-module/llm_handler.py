@@ -19,12 +19,8 @@ class ExtractedData(BaseModel):
 load_dotenv()
 SCHEMA_JSON = ExtractedData.model_json_schema()
 
-# OLLAMA_API_KEY = os.getenv("API_KEY")
-# CLIENT = Client(host="https://ollama.com",
-#                 headers={'Authorization': 'Bearer '+OLLAMA_API_KEY},
-#                 timeout=180
-# )
-# MODEL_NAME = "llama3.2:1b"
+OLLAMA_API_KEY = os.getenv("API_KEY")
+CLIENT = Client(host="https://ollama.com", headers={'Authorization': 'Bearer '+OLLAMA_API_KEY}, timeout=180)
 
 def generate_prompt(text: str, is_job: bool) -> str:
 
@@ -111,16 +107,22 @@ def extract_structured_data(text_cleaned: str, is_job: bool, model_name: str="ll
 
     prompt = generate_prompt(text_cleaned, is_job)
     empty_data = ExtractedData(experience=[], soft_skills=[]).model_dump()
-    # messages = [
-    #     {
-    #         'role': 'user',
-    #         'content': prompt,
-    #     },
-    # ]
+
     try:
-        #response_obj=CLIENT.chat("deepseek-v3.1:671b-cloud", messages=messages, stream=False, format=ExtractedData.model_json_schema())
-        response_obj = generate(model=model_name, prompt=prompt, stream=False, format=ExtractedData.model_json_schema())
-        response = response_obj.response
+        if "cloud" in model_name.lower():
+            messages = [
+                {
+                    'role': 'user',
+                    'content': prompt,
+                },
+            ]
+            response_obj=CLIENT.chat(model=model_name, messages=messages, stream=False, format=ExtractedData.model_json_schema())
+            response = response_obj['message']['content']
+        else:
+            response_obj = generate(model=model_name, prompt=prompt, stream=False, format=ExtractedData.model_json_schema())
+            response = response_obj.response
+
+
         data_dict = json.loads(response)
         validated = ExtractedData.model_validate(data_dict).model_dump()
         return validated
