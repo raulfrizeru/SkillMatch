@@ -6,9 +6,12 @@ import unicodedata
 os.environ["HF_TOKEN"] = "hf_"
 
 def extract_text_from_pdf(file_path):
-    file_path= "C:/Users/raulr/Desktop/LICENTA/SkillMatch/web-app/" + file_path
+    current_dir = os.path.dirname(os.path.abspath(__file__))  # SkillMatch/ai-module
+    project_root = os.path.dirname(current_dir)  # SkillMatch
+    full_file_path = os.path.join(project_root, "web-app", file_path)
+
     converter = DocumentConverter()
-    result = converter.convert(file_path)
+    result = converter.convert(full_file_path)
     return result.document.export_to_markdown()
 
 def clean_text_for_llm(text):

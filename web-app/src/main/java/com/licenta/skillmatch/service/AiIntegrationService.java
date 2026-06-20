@@ -9,12 +9,14 @@ import com.licenta.skillmatch.repository.JobApplicationRepository;
 import com.licenta.skillmatch.repository.JobPostRepository;
 import com.licenta.skillmatch.repository.PastInterviewRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.ObjectMapper;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.*;
+
 
 @Service
 public class AiIntegrationService {
@@ -31,6 +33,12 @@ public class AiIntegrationService {
 
     @Autowired
     JobApplicationRepository jobApplicationRepository;
+
+    @Value("${ai.python.path}")
+    private String pythonPath;
+
+    @Value("${ai.script.path}")
+    private String scriptPath;
 
     public String runAiScoring(Candidate candidate, JobPost job, String selectedLlmModel) {
         try {
@@ -83,8 +91,8 @@ public class AiIntegrationService {
             String base64Payload = Base64.getEncoder().encodeToString(jsonPayload.getBytes("UTF-8"));
 
             ProcessBuilder processBuilder = new ProcessBuilder(
-                    "C:\\Users\\raulr\\Desktop\\LICENTA\\SkillMatch\\ai-module\\.venv\\Scripts\\python.exe",
-                    "C:\\Users\\raulr\\Desktop\\LICENTA\\SkillMatch\\ai-module\\main.py",
+                    pythonPath,
+                    scriptPath,
                     base64Payload
             );
 

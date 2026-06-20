@@ -144,7 +144,6 @@ public class JobApplicationService {
                 candidateRepository.save(candidate);
                 jobPostRepository.save(jobPost);
 
-                // Șterge CandidateJobScore după preluare
                 candidateJobScoreRepository.delete(score);
             }
 
